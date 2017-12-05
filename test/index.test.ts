@@ -1,4 +1,4 @@
-import DummyClass from '../src/envoy-node-boilerplate'
+import EnvoyContext from '../src/envoy-context'
 
 /**
  * Dummy test
@@ -9,6 +9,6 @@ describe('Dummy test', () => {
   })
 
   it('DummyClass is instantiable', () => {
-    expect(new DummyClass()).toBeInstanceOf(DummyClass)
+    expect(new EnvoyContext({})).toBeInstanceOf(EnvoyContext)
   })
 })

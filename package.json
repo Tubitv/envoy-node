@@ -9,7 +9,7 @@
   "files": [
     "dist"
   ],
-  "author": "Yingyu Cheng <github@winguse.com>",
+  "author": "Yingyu Cheng <yingyu@tubi.tv>",
   "repository": {
     "type": "git",
     "url": ""
@@ -76,6 +76,7 @@
   "devDependencies": {
     "@types/jest": "^21.1.0",
     "@types/node": "^8.0.0",
+    "@types/node-fetch": "^1.6.7",
     "colors": "^1.1.2",
     "commitizen": "^2.9.6",
     "coveralls": "^3.0.0",
@@ -102,5 +103,8 @@
     "typedoc": "^0.9.0",
     "typescript": "^2.3.4",
     "validate-commit-msg": "^2.12.2"
+  },
+  "dependencies": {
+    "node-fetch": "^1.7.3"
   }
 }
