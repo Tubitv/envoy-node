@@ -105,6 +105,7 @@
     "validate-commit-msg": "latest"
   },
   "dependencies": {
+    "grpc": "latest",
     "node-fetch": "latest"
   }
 }
