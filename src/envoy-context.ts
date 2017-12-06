@@ -1,28 +1,28 @@
-import { HttpHeader } from '../types/index'
+import { HttpHeader } from "../types/index";
 
-export const ENVOY_DEFAULT_EGRESS_PORT = 12345
+export const ENVOY_DEFAULT_EGRESS_PORT = 12345;
 
 export const ENVOY_EGRESS_PORT =
-  parseInt(
-    process.env.ENVOY_EGRESS_PORT || `${ENVOY_DEFAULT_EGRESS_PORT}`,
-    10
-  ) || ENVOY_DEFAULT_EGRESS_PORT
+  parseInt(process.env.ENVOY_EGRESS_PORT || `${ENVOY_DEFAULT_EGRESS_PORT}`, 10) ||
+  ENVOY_DEFAULT_EGRESS_PORT;
 
-export const X_B3_TRACEID = 'x-b3-traceid'
-export const X_B3_SPANID = 'x-b3-spanid'
-export const X_B3_PARENTSPANID = 'x-b3-parentspanid'
-export const X_B3_SAMPLED = 'x-b3-sampled'
-export const X_B3_FLAGS = 'x-b3-flags'
-export const X_OT_SPAN_CONTEXT = 'x-ot-span-context'
-export const X_REQUEST_ID = 'x-request-id'
-export const X_CLIENT_TRACE_ID = 'x-client-trace-id'
+export const X_B3_TRACEID = "x-b3-traceid";
+export const X_B3_SPANID = "x-b3-spanid";
+export const X_B3_PARENTSPANID = "x-b3-parentspanid";
+export const X_B3_SAMPLED = "x-b3-sampled";
+export const X_B3_FLAGS = "x-b3-flags";
+export const X_OT_SPAN_CONTEXT = "x-ot-span-context";
+export const X_REQUEST_ID = "x-request-id";
+export const X_CLIENT_TRACE_ID = "x-client-trace-id";
+
+export const X_ENVOY_EXPECTED_RQ_TIMEOUT_MS = "x-envoy-expected-rq-timeout-ms";
 
 export default class EnvoyContext {
   /**
    * The port local Envoy listening on for egress traffic.
    * (So all the egress will be sent to that port)
    */
-  envoyEgressPort: number
+  envoyEgressPort: number;
 
   /**
    * The x-b3-traceid HTTP header is used by the Zipkin tracer in Envoy. The TraceId
@@ -30,7 +30,7 @@ export default class EnvoyContext {
    * trace shares this ID.
    * See more on zipkin tracing here <https://github.com/openzipkin/b3-propagation>.
    */
-  traceId: string
+  traceId: string;
 
   /**
    * The x-b3-spanid HTTP header is used by the Zipkin tracer in Envoy. The SpanId is
@@ -39,7 +39,7 @@ export default class EnvoyContext {
    * value of the TraceId.
    * See more on zipkin tracing here <https://github.com/openzipkin/b3-propagation>.
    */
-  spanId: string
+  spanId: string;
 
   /**
    * The x-b3-parentspanid HTTP header is used by the Zipkin tracer in Envoy. The
@@ -48,7 +48,7 @@ export default class EnvoyContext {
    * is absent.
    * See more on zipkin tracing here <https://github.com/openzipkin/b3-propagation>.
    */
-  parentSpanId: string
+  parentSpanId: string;
 
   /**
    * The x-b3-sampled HTTP header is used by the Zipkin tracer in Envoy. When the Sampled
@@ -56,14 +56,14 @@ export default class EnvoyContext {
    * 0 or 1, the same value should be consistently sent downstream.
    * See more on zipkin tracing here <https://github.com/openzipkin/b3-propagation>.
    */
-  sampled: string
+  sampled: string;
 
   /**
    * The x-b3-flags HTTP header is used by the Zipkin tracer in Envoy. The encode one or
    * more options. For example, Debug is encoded as X-B3-Flags: 1.
    * See more on zipkin tracing here <https://github.com/openzipkin/b3-propagation>.
    */
-  flags: string
+  flags: string;
 
   /**
    * The x-ot-span-context HTTP header is used by Envoy to establish proper parent-child
@@ -74,7 +74,7 @@ export default class EnvoyContext {
    * propagate x-ot-span-context on the egress call to an upstream.
    * See more on tracing here <https://www.envoyproxy.io/docs/envoy/v1.5.0/intro/arch_overview/tracing.html#arch-overview-tracing>.
    */
-  otSpanContext: string
+  otSpanContext: string;
 
   /**
    * The x-request-id header is used by Envoy to uniquely identify a request as well as
@@ -91,25 +91,35 @@ export default class EnvoyContext {
    * - Stable tracing when performing random sampling via the tracing.random_sampling runtime
    *   setting or via forced tracing using the x-envoy-force-trace and x-client-trace-id headers.
    */
-  requestId: string
+  requestId: string;
 
   /**
    * If an external client sets this header, Envoy will join the provided trace ID with
    * the internally generated x-request-id.
    */
-  clientTraceId: string
+  clientTraceId: string;
+
+  /**
+   * This is the time in milliseconds the router expects the request to be completed. Envoy
+   * sets this header so that the upstream host receiving the request can make decisions based
+   * on the request timeout, e.g., early exit. This is set on internal requests and is either
+   * taken from the x-envoy-upstream-rq-timeout-ms header or the route timeout, in that order.
+   */
+  expectedRequestTimeout: number;
 
   constructor(httpHeader: HttpHeader, envoyEgressPort = ENVOY_EGRESS_PORT) {
-    this.envoyEgressPort = envoyEgressPort
+    this.envoyEgressPort = envoyEgressPort;
 
-    this.traceId = httpHeader[X_B3_TRACEID]
-    this.spanId = httpHeader[X_B3_SPANID]
-    this.parentSpanId = httpHeader[X_B3_PARENTSPANID]
-    this.sampled = httpHeader[X_B3_SAMPLED]
-    this.flags = httpHeader[X_B3_FLAGS]
-    this.otSpanContext = httpHeader[X_OT_SPAN_CONTEXT]
-    this.requestId = httpHeader[X_REQUEST_ID]
-    this.clientTraceId = httpHeader[X_CLIENT_TRACE_ID]
+    this.traceId = httpHeader[X_B3_TRACEID];
+    this.spanId = httpHeader[X_B3_SPANID];
+    this.parentSpanId = httpHeader[X_B3_PARENTSPANID];
+    this.sampled = httpHeader[X_B3_SAMPLED];
+    this.flags = httpHeader[X_B3_FLAGS];
+    this.otSpanContext = httpHeader[X_OT_SPAN_CONTEXT];
+    this.requestId = httpHeader[X_REQUEST_ID];
+    this.clientTraceId = httpHeader[X_CLIENT_TRACE_ID];
+
+    this.expectedRequestTimeout = parseInt(httpHeader[X_ENVOY_EXPECTED_RQ_TIMEOUT_MS], 10);
   }
 
   /**
@@ -126,6 +136,6 @@ export default class EnvoyContext {
       [X_OT_SPAN_CONTEXT]: this.otSpanContext,
       [X_REQUEST_ID]: this.requestId,
       [X_CLIENT_TRACE_ID]: this.clientTraceId
-    }
+    };
   }
 }
