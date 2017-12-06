@@ -16,7 +16,7 @@ export default async function envoyFetch(
   refinedInit.headers = Object.assign(
     {},
     refinedInit.headers,
-    envoyContext.assembleHeader(),
+    envoyContext.assembleTracingHeader(),
     {
       // we are likely to assign host (hostname + port) here
       // but envoy has a bug, if you specify a port number, it returns 404

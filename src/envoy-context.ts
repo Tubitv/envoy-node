@@ -112,7 +112,11 @@ export default class EnvoyContext {
     this.clientTraceId = httpHeader[X_CLIENT_TRACE_ID]
   }
 
-  assembleHeader(): HttpHeader {
+  /**
+   * Assemble the required tracing headers that required for propagation.
+   * See more here <https://www.envoyproxy.io/docs/envoy/v1.5.0/intro/arch_overview/tracing.html#trace-context-propagation>
+   */
+  assembleTracingHeader(): HttpHeader {
     return {
       [X_B3_TRACEID]: this.traceId,
       [X_B3_SPANID]: this.spanId,
