@@ -17,6 +17,9 @@ export const X_CLIENT_TRACE_ID = "x-client-trace-id";
 
 export const X_ENVOY_EXPECTED_RQ_TIMEOUT_MS = "x-envoy-expected-rq-timeout-ms";
 
+export const X_ENVOY_OVERLOADED = "x-envoy-overloaded";
+export const X_ENVOY_UPSTREAM_SERVICE_TIME = "x-envoy-upstream-service-time";
+
 export default class EnvoyContext {
   /**
    * The port local Envoy listening on for egress traffic.
