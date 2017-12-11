@@ -9,3 +9,4 @@ dist
 compiled
 .awcache
 /bin/
+package-lock.json
