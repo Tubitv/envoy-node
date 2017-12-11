@@ -81,7 +81,7 @@ export default class EnvoyGrpcRequestParams extends EnvoyRequestParams {
   }
 
   /**
-   * assemble the request headers for setting retry.. TODO circuit break
+   * assemble the request headers for setting retry.
    */
   assembleRequestMeta(): grpc.Metadata {
     const metadata = new grpc.Metadata();

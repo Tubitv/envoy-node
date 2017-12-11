@@ -100,7 +100,7 @@ export default class EnvoyHttpRequestParams extends EnvoyRequestParams {
   }
 
   /**
-   * assemble the request headers for setting retry.. TODO circuit break
+   * assemble the request headers for setting retry.
    */
   assembleRequestHeaders(): HttpHeader {
     const header: HttpHeader = this.context.assembleTracingHeader();
