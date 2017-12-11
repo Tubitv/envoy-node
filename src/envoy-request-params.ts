@@ -1,8 +1,15 @@
+import EnvoyContext from "./envoy-context";
+
 export const X_ENVOY_MAX_RETRIES = "x-envoy-max-retries";
 export const X_ENVOY_UPSTREAM_RQ_TIMEOUT_MS = "x-envoy-upstream-rq-timeout-ms";
 export const X_ENVOY_UPSTREAM_RQ_PER_TRY_TIMEOUT_MS = "x-envoy-upstream-rq-timeout-ms";
 
 export default abstract class EnvoyRequestParams {
+  /**
+   * request context read from ingress traffic
+   */
+  readonly context: EnvoyContext;
+
   /**
    * If a retry policy is in place, Envoy will default to retrying one time unless
    * explicitly specified. The number of retries can be explicitly set in the route
@@ -27,7 +34,8 @@ export default abstract class EnvoyRequestParams {
    */
   readonly maxRetries: number;
 
-  constructor(maxRetries: number) {
+  constructor(context: EnvoyContext, maxRetries: number) {
+    this.context = context;
     this.maxRetries = maxRetries;
   }
 }

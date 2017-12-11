@@ -4,6 +4,7 @@ import EnvoyRequestParams, {
   X_ENVOY_UPSTREAM_RQ_PER_TRY_TIMEOUT_MS
 } from "./envoy-request-params";
 import { HttpHeader } from "../types/index";
+import EnvoyContext from "./envoy-context";
 
 export const X_ENVOY_RETRY_ON = "x-envoy-retry-on";
 
@@ -84,7 +85,7 @@ export default class EnvoyHttpRequestParams extends EnvoyRequestParams {
    * the default setting in Envoy's config
    * @param params the params for initialize the request params
    */
-  constructor(params?: ConstructorParams) {
+  constructor(context: EnvoyContext, params?: ConstructorParams) {
     const { maxRetries, retryOn, timeout, perTryTimeout }: ConstructorParams = {
       maxRetries: -1,
       retryOn: [],
@@ -92,7 +93,7 @@ export default class EnvoyHttpRequestParams extends EnvoyRequestParams {
       perTryTimeout: -1,
       ...params
     };
-    super(maxRetries);
+    super(context, maxRetries);
     this.retryOn = retryOn;
     this.timeout = timeout;
     this.perTryTimeout = perTryTimeout;
@@ -102,7 +103,7 @@ export default class EnvoyHttpRequestParams extends EnvoyRequestParams {
    * assemble the request headers for setting retry.. TODO circuit break
    */
   assembleRequestHeaders(): HttpHeader {
-    const header: HttpHeader = {};
+    const header: HttpHeader = this.context.assembleTracingHeader();
 
     if (this.maxRetries >= 0) {
       header[X_ENVOY_MAX_RETRIES] = `${this.maxRetries}`;

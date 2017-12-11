@@ -5,6 +5,7 @@ import EnvoyRequestParams, {
   X_ENVOY_UPSTREAM_RQ_TIMEOUT_MS,
   X_ENVOY_UPSTREAM_RQ_PER_TRY_TIMEOUT_MS
 } from "./envoy-request-params";
+import EnvoyContext from "./envoy-context";
 
 export const X_ENVOY_RETRY_GRPC_ON = "x-envoy-retry-grpc-on";
 
@@ -65,7 +66,7 @@ export default class EnvoyGrpcRequestParams extends EnvoyRequestParams {
    * the default setting in Envoy's config
    * @param params the params for initialize the request params
    */
-  constructor(params?: ConstructorParams) {
+  constructor(context: EnvoyContext, params?: ConstructorParams) {
     const { maxRetries, retryOn, timeout, perTryTimeout }: ConstructorParams = {
       maxRetries: -1,
       retryOn: [],
@@ -73,7 +74,7 @@ export default class EnvoyGrpcRequestParams extends EnvoyRequestParams {
       perTryTimeout: -1,
       ...params
     };
-    super(maxRetries);
+    super(context, maxRetries);
     this.retryOn = retryOn;
     this.timeout = timeout;
     this.perTryTimeout = perTryTimeout;
@@ -82,8 +83,12 @@ export default class EnvoyGrpcRequestParams extends EnvoyRequestParams {
   /**
    * assemble the request headers for setting retry.. TODO circuit break
    */
-  assembleRequestHeaders(): grpc.Metadata {
+  assembleRequestMeta(): grpc.Metadata {
     const metadata = new grpc.Metadata();
+
+    for (const [key, value] of Object.entries(this.context.assembleTracingHeader())) {
+      metadata.add(key, value);
+    }
 
     if (this.maxRetries >= 0) {
       metadata.add(X_ENVOY_MAX_RETRIES, `${this.maxRetries}`);

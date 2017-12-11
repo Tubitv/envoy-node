@@ -3,9 +3,10 @@ import { parse as parseUrl } from "url";
 
 import EnvoyContext from "./envoy-context";
 import { HttpHeader } from "../types";
+import EnvoyHttpRequestParams from "./envoy-http-request-params";
 
 export default async function envoyFetch(
-  envoyContext: EnvoyContext,
+  envoyParams: EnvoyHttpRequestParams,
   url: string,
   init?: RequestInit
 ): Promise<Response> {
@@ -20,7 +21,7 @@ export default async function envoyFetch(
 
   refinedInit.headers = {
     ...refinedInit.headers,
-    ...envoyContext.assembleTracingHeader(),
+    ...envoyParams.assembleRequestHeaders(),
     // we are likely to assign host (hostname + port) here
     // but envoy has a bug, if you specify a port number, it returns 404
     host: hostname
