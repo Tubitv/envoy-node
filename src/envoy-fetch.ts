@@ -41,7 +41,7 @@ export default async function envoyFetch(
     host: hostname
   };
   const response = await fetch(
-    `http://127.0.0.1:${envoyContext.envoyEgressPort}${path}`,
+    `http://127.0.0.1:${envoyParams.context.envoyEgressPort}${path}`,
     refinedInit
   );
 
