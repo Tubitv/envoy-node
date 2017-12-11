@@ -1,6 +1,10 @@
 import grpc from "grpc";
 
-import EnvoyRequestParams, { X_ENVOY_MAX_RETRIES } from "./envoy-request-params";
+import EnvoyRequestParams, {
+  X_ENVOY_MAX_RETRIES,
+  X_ENVOY_UPSTREAM_RQ_TIMEOUT_MS,
+  X_ENVOY_UPSTREAM_RQ_PER_TRY_TIMEOUT_MS
+} from "./envoy-request-params";
 
 export const X_ENVOY_RETRY_GRPC_ON = "x-envoy-retry-grpc-on";
 
@@ -31,18 +35,48 @@ export enum GrpcRetryOn {
   RESOURCE_EXHAUSTED = "resource-exhausted"
 }
 
+export interface ConstructorParams {
+  maxRetries: number;
+  retryOn: GrpcRetryOn[];
+  timeout: number;
+  perTryTimeout: number;
+}
+
 export default class EnvoyGrpcRequestParams extends EnvoyRequestParams {
   readonly retryOn: GrpcRetryOn[];
 
   /**
+   * Setting this header on egress requests will cause Envoy to override the route configuration.
+   * The timeout must be specified in millisecond units.
+   * Also see <perTryTimeout>
+   */
+  readonly timeout: number;
+
+  /**
+   * Setting this will cause Envoy to set a per try timeout on routed requests. This timeout must
+   * be <= the global route timeout (see <timeout>) or it is ignored.
+   * This allows a caller to set a tight per try timeout to allow for retries while maintaining a
+   * reasonable overall timeout.
+   */
+  readonly perTryTimeout: number;
+
+  /**
    * Setting the retry policies, if empty param is given will not generate any headers but using
    * the default setting in Envoy's config
-   * @param maxRetries max retries, -1 means using default
-   * @param retryOn in what situation(s) shall we retry
+   * @param params the params for initialize the request params
    */
-  constructor(maxRetries = -1, retryOn: GrpcRetryOn[] = []) {
+  constructor(params?: ConstructorParams) {
+    const { maxRetries, retryOn, timeout, perTryTimeout }: ConstructorParams = {
+      maxRetries: -1,
+      retryOn: [],
+      timeout: -1,
+      perTryTimeout: -1,
+      ...params
+    };
     super(maxRetries);
     this.retryOn = retryOn;
+    this.timeout = timeout;
+    this.perTryTimeout = perTryTimeout;
   }
 
   /**
@@ -50,10 +84,23 @@ export default class EnvoyGrpcRequestParams extends EnvoyRequestParams {
    */
   assembleRequestHeaders(): grpc.Metadata {
     const metadata = new grpc.Metadata();
+
     if (this.maxRetries >= 0) {
       metadata.add(X_ENVOY_MAX_RETRIES, `${this.maxRetries}`);
+    }
+
+    if (this.maxRetries > 0) {
       metadata.add(X_ENVOY_RETRY_GRPC_ON, this.retryOn.join(","));
     }
+
+    if (this.timeout > 0) {
+      metadata.add(X_ENVOY_UPSTREAM_RQ_TIMEOUT_MS, `${this.timeout}`);
+    }
+
+    if (this.perTryTimeout > 0) {
+      metadata.add(X_ENVOY_UPSTREAM_RQ_PER_TRY_TIMEOUT_MS, `${this.perTryTimeout}`);
+    }
+
     return metadata;
   }
 }

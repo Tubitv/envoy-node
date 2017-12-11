@@ -1,4 +1,8 @@
-import EnvoyRequestParams, { X_ENVOY_MAX_RETRIES } from "./envoy-request-params";
+import EnvoyRequestParams, {
+  X_ENVOY_MAX_RETRIES,
+  X_ENVOY_UPSTREAM_RQ_TIMEOUT_MS,
+  X_ENVOY_UPSTREAM_RQ_PER_TRY_TIMEOUT_MS
+} from "./envoy-request-params";
 import { HttpHeader } from "../types/index";
 
 export const X_ENVOY_RETRY_ON = "x-envoy-retry-on";
@@ -50,30 +54,72 @@ export enum HttpRetryOn {
   REFUSED_STREAM = "refused-stream"
 }
 
+export interface ConstructorParams {
+  maxRetries: number;
+  retryOn: HttpRetryOn[];
+  timeout: number;
+  perTryTimeout: number;
+}
+
 export default class EnvoyHttpRequestParams extends EnvoyRequestParams {
   readonly retryOn: HttpRetryOn[];
 
   /**
+   * Setting this header on egress requests will cause Envoy to override the route configuration.
+   * The timeout must be specified in millisecond units.
+   * Also see <perTryTimeout>
+   */
+  readonly timeout: number;
+
+  /**
+   * Setting this will cause Envoy to set a per try timeout on routed requests. This timeout must
+   * be <= the global route timeout (see <timeout>) or it is ignored.
+   * This allows a caller to set a tight per try timeout to allow for retries while maintaining a
+   * reasonable overall timeout.
+   */
+  readonly perTryTimeout: number;
+
+  /**
    * Setting the retry policies, if empty param is given will not generate any headers but using
    * the default setting in Envoy's config
-   * @param maxRetries max retries, -1 means using default
-   * @param retryOn in what situation(s) shall we retry
+   * @param params the params for initialize the request params
    */
-  constructor(maxRetries = -1, retryOn: HttpRetryOn[] = []) {
+  constructor(params?: ConstructorParams) {
+    const { maxRetries, retryOn, timeout, perTryTimeout }: ConstructorParams = {
+      maxRetries: -1,
+      retryOn: [],
+      timeout: -1,
+      perTryTimeout: -1,
+      ...params
+    };
     super(maxRetries);
     this.retryOn = retryOn;
+    this.timeout = timeout;
+    this.perTryTimeout = perTryTimeout;
   }
 
   /**
    * assemble the request headers for setting retry.. TODO circuit break
    */
   assembleRequestHeaders(): HttpHeader {
-    if (this.maxRetries < 0) {
-      return {};
+    const header: HttpHeader = {};
+
+    if (this.maxRetries >= 0) {
+      header[X_ENVOY_MAX_RETRIES] = `${this.maxRetries}`;
     }
-    return {
-      [X_ENVOY_MAX_RETRIES]: `${this.maxRetries}`,
-      [X_ENVOY_RETRY_ON]: this.retryOn.join(",")
-    };
+
+    if (this.maxRetries > 0) {
+      header[X_ENVOY_RETRY_ON] = this.retryOn.join(",");
+    }
+
+    if (this.timeout > 0) {
+      header[X_ENVOY_UPSTREAM_RQ_TIMEOUT_MS] = `${this.timeout}`;
+    }
+
+    if (this.perTryTimeout > 0) {
+      header[X_ENVOY_UPSTREAM_RQ_PER_TRY_TIMEOUT_MS] = `${this.perTryTimeout}`;
+    }
+
+    return header;
   }
 }
