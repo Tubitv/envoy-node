@@ -74,6 +74,7 @@
     "mapCoverage": true
   },
   "devDependencies": {
+    "@types/protobufjs": "latest",
     "@types/jest": "latest",
     "@types/node": "latest",
     "@types/node-fetch": "latest",

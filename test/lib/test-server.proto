@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "io.tubi.envoy-test";
+option java_outer_classname = "TestServerProto";
+option objc_class_prefix = "TS";
+
+package testServer;
+
+// The greeting service definition.
+service TestServer {
+  // Sends a greeting
+  rpc Wrapper (string) returns (string) {}
+  rpc Inner (string) returns (string) {}
+}
