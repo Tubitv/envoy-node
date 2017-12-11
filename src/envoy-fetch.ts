@@ -33,8 +33,11 @@ export default async function envoyFetch(
   }
   const refinedInit: RequestInit = { ...init };
 
+  const oldHeaders: HttpHeader = {};
+  Object.assign(oldHeaders, refinedInit.headers);
+
   refinedInit.headers = {
-    ...refinedInit.headers,
+    ...oldHeaders,
     ...envoyParams.assembleRequestHeaders(),
     // we are likely to assign host (hostname + port) here
     // but envoy has a bug, if you specify a port number, it returns 404

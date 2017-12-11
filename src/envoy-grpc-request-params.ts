@@ -36,7 +36,7 @@ export enum GrpcRetryOn {
   RESOURCE_EXHAUSTED = "resource-exhausted"
 }
 
-export interface ConstructorParams {
+export interface EnvoyGrpcRequestInit {
   maxRetries: number;
   retryOn: GrpcRetryOn[];
   timeout: number;
@@ -66,8 +66,8 @@ export default class EnvoyGrpcRequestParams extends EnvoyRequestParams {
    * the default setting in Envoy's config
    * @param params the params for initialize the request params
    */
-  constructor(context: EnvoyContext, params?: ConstructorParams) {
-    const { maxRetries, retryOn, timeout, perTryTimeout }: ConstructorParams = {
+  constructor(context: EnvoyContext, params?: EnvoyGrpcRequestInit) {
+    const { maxRetries, retryOn, timeout, perTryTimeout }: EnvoyGrpcRequestInit = {
       maxRetries: -1,
       retryOn: [],
       timeout: -1,

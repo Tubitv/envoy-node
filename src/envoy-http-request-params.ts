@@ -55,7 +55,7 @@ export enum HttpRetryOn {
   REFUSED_STREAM = "refused-stream"
 }
 
-export interface ConstructorParams {
+export interface EnvoyHttpRequestInit {
   maxRetries: number;
   retryOn: HttpRetryOn[];
   timeout: number;
@@ -85,8 +85,8 @@ export default class EnvoyHttpRequestParams extends EnvoyRequestParams {
    * the default setting in Envoy's config
    * @param params the params for initialize the request params
    */
-  constructor(context: EnvoyContext, params?: ConstructorParams) {
-    const { maxRetries, retryOn, timeout, perTryTimeout }: ConstructorParams = {
+  constructor(context: EnvoyContext, params?: EnvoyHttpRequestInit) {
+    const { maxRetries, retryOn, timeout, perTryTimeout }: EnvoyHttpRequestInit = {
       maxRetries: -1,
       retryOn: [],
       timeout: -1,
