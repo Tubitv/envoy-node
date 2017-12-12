@@ -37,10 +37,10 @@ export enum GrpcRetryOn {
 }
 
 export interface EnvoyGrpcRequestInit {
-  maxRetries: number;
-  retryOn: GrpcRetryOn[];
-  timeout: number;
-  perTryTimeout: number;
+  maxRetries?: number;
+  retryOn?: GrpcRetryOn[];
+  timeout?: number;
+  perTryTimeout?: number;
 }
 
 export default class EnvoyGrpcRequestParams extends EnvoyRequestParams {

@@ -56,10 +56,10 @@ export enum HttpRetryOn {
 }
 
 export interface EnvoyHttpRequestInit {
-  maxRetries: number;
-  retryOn: HttpRetryOn[];
-  timeout: number;
-  perTryTimeout: number;
+  maxRetries?: number;
+  retryOn?: HttpRetryOn[];
+  timeout?: number;
+  perTryTimeout?: number;
 }
 
 export default class EnvoyHttpRequestParams extends EnvoyRequestParams {

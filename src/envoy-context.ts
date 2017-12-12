@@ -1,4 +1,5 @@
 import { HttpHeader } from "../types/index";
+import { Metadata } from "grpc";
 
 export const ENVOY_DEFAULT_EGRESS_PORT = 12345;
 
@@ -110,19 +111,35 @@ export default class EnvoyContext {
    */
   readonly expectedRequestTimeout: number;
 
-  constructor(httpHeader: HttpHeader, envoyEgressPort = ENVOY_EGRESS_PORT) {
+  constructor(meta: HttpHeader | Metadata, envoyEgressPort = ENVOY_EGRESS_PORT) {
     this.envoyEgressPort = envoyEgressPort;
 
-    this.traceId = httpHeader[X_B3_TRACEID];
-    this.spanId = httpHeader[X_B3_SPANID];
-    this.parentSpanId = httpHeader[X_B3_PARENTSPANID];
-    this.sampled = httpHeader[X_B3_SAMPLED];
-    this.flags = httpHeader[X_B3_FLAGS];
-    this.otSpanContext = httpHeader[X_OT_SPAN_CONTEXT];
-    this.requestId = httpHeader[X_REQUEST_ID];
-    this.clientTraceId = httpHeader[X_CLIENT_TRACE_ID];
-
-    this.expectedRequestTimeout = parseInt(httpHeader[X_ENVOY_EXPECTED_RQ_TIMEOUT_MS], 10);
+    if (meta instanceof Metadata) {
+      const metadata: Metadata = meta;
+      this.traceId = metadata.get(X_B3_TRACEID).toString();
+      this.spanId = metadata.get(X_B3_SPANID).toString();
+      this.parentSpanId = metadata.get(X_B3_PARENTSPANID).toString();
+      this.sampled = metadata.get(X_B3_SAMPLED).toString();
+      this.flags = metadata.get(X_B3_FLAGS).toString();
+      this.otSpanContext = metadata.get(X_OT_SPAN_CONTEXT).toString();
+      this.requestId = metadata.get(X_REQUEST_ID).toString();
+      this.clientTraceId = metadata.get(X_CLIENT_TRACE_ID).toString();
+      this.expectedRequestTimeout = parseInt(
+        metadata.get(X_ENVOY_EXPECTED_RQ_TIMEOUT_MS).toString(),
+        10
+      );
+    } else {
+      const httpHeader: HttpHeader = meta;
+      this.traceId = httpHeader[X_B3_TRACEID];
+      this.spanId = httpHeader[X_B3_SPANID];
+      this.parentSpanId = httpHeader[X_B3_PARENTSPANID];
+      this.sampled = httpHeader[X_B3_SAMPLED];
+      this.flags = httpHeader[X_B3_FLAGS];
+      this.otSpanContext = httpHeader[X_OT_SPAN_CONTEXT];
+      this.requestId = httpHeader[X_REQUEST_ID];
+      this.clientTraceId = httpHeader[X_CLIENT_TRACE_ID];
+      this.expectedRequestTimeout = parseInt(httpHeader[X_ENVOY_EXPECTED_RQ_TIMEOUT_MS], 10);
+    }
   }
 
   /**
