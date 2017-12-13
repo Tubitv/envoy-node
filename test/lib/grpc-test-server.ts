@@ -26,7 +26,7 @@ export default class GrpcTestServer {
     const zipkinPort = port++;
 
     // TODO build envoy config
-    this.envoy = spawn("echo", ["-c", "config"]);
+    this.envoy = spawn("envoy", ["-c", "config"]);
     this.zipkin = new ZipkinMock(zipkinPort);
 
     // start server
