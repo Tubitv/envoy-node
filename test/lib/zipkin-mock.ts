@@ -5,11 +5,14 @@ export default class ZipkinMock {
 
   constructor(port: number) {
     this.server = http.createServer(this.process_request);
-    this.server.listen(port);
   }
 
   private process_request(req: IncomingMessage, res: ServerResponse) {
     //
+  }
+
+  start() {
+    this.server.listen(port);
   }
 
   stop() {

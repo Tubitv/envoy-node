@@ -1,39 +1,20 @@
-import { spawn, ChildProcess } from "child_process";
 import grpc, { ServerUnaryCall, sendUnaryData } from "grpc";
-import ZipkinMock from "./zipkin-mock";
 import { envoyFetch, EnvoyContext, EnvoyGrpcRequestParams } from "../../src/envoy-node-boilerplate";
+import CommonTestServer from "./common-test-server";
 
-let serverId = 0;
 const PROTO_PATH = __dirname + "/ping.proto";
 const testProto: any = grpc.load(PROTO_PATH).test;
 
 const response = { message: "pong" };
 
-export const TEST_PORT_START = 10000;
-
-export default class GrpcTestServer {
-  readonly envoy: ChildProcess;
+export default class GrpcTestServer extends CommonTestServer {
   readonly server: grpc.Server;
-  readonly zipkin: ZipkinMock;
 
   constructor() {
-    let port = TEST_PORT_START + serverId * 5;
-    serverId += 1;
-    const envoyIngressPort = port++;
-    const envoyEgressPort = port++;
-    const servicePort = port++;
-    const adminPort = port++;
-    const zipkinPort = port++;
-
-    // TODO build envoy config
-    this.envoy = spawn("envoy", ["-c", "config"]);
-    this.zipkin = new ZipkinMock(zipkinPort);
-
-    // start server
+    super("./envoy-grpc-config.yaml");
     this.server = new grpc.Server();
     this.server.addService(testProto.Ping.service, { wrapper: this.wrapper, inner: this.inner });
-    this.server.bind(`localhost:${servicePort}`, grpc.ServerCredentials.createInsecure());
-    this.server.start();
+    this.server.bind(`localhost:${this.servicePort}`, grpc.ServerCredentials.createInsecure());
   }
 
   private wrapper(call: ServerUnaryCall, callback: sendUnaryData): void {
@@ -52,10 +33,14 @@ export default class GrpcTestServer {
     callback(undefined, response);
   }
 
-  stop() {
-    this.envoy.kill();
+  async start() {
+    // start server
+    await super.start();
+    this.server.start();
+  }
+
+  async stop() {
+    await super.stop();
     this.server.forceShutdown();
-    this.zipkin.stop();
-    // TODO clean up envoy config file
   }
 }
