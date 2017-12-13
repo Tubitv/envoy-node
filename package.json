@@ -19,7 +19,7 @@
     "node": ">=6.0.0"
   },
   "scripts": {
-    "download-envoy": "wget https://s3-us-west-1.amazonaws.com/tubi-public-binaries/envoy/v1.5.0/envoy -O ./node_modules/.bin/envoy && chmod +x node_modules/.bin/envoy",
+    "download-envoy": "wget https://s3-us-west-1.amazonaws.com/tubi-public-binaries/envoy/v1.5.0/envoy -O /tmp/envoy && chmod +x /tmp/envoy",
     "lint": "tslint -t codeFrame 'src/**/*.ts' 'test/**/*.ts' 'types/**/*.ts'",
     "prebuild": "rimraf dist",
     "build": "tsc && typedoc --out dist/docs --target es6 --theme minimal src",

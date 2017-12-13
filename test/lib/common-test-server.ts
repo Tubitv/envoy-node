@@ -42,7 +42,7 @@ export default abstract class CommonTestServer {
       .replace(/ZIPKIN_PORT/g, `${this.zipkin.port}`)
       .replace(/SERVICE_PORT/g, `${this.servicePort}`);
     await writeFile(this.envoyConfigFileName, envoyConfig);
-    this.envoy = spawn("envoy", ["-c", this.envoyConfigFileName]);
+    this.envoy = spawn("/tmp/envoy", ["-c", this.envoyConfigFileName]);
     this.zipkin.start();
   }
 
