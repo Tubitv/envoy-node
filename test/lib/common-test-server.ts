@@ -39,6 +39,7 @@ export default abstract class CommonTestServer {
       .replace(/INGRESS_PORT/g, `${this.envoyIngressPort}`)
       .replace(/EGRESS_PORT/g, `${this.envoyEgressPort}`)
       .replace(/ADMIN_PORT/g, `${this.envoyAdminPort}`)
+      .replace(/ZIPKIN_PORT/g, `${this.zipkin.port}`)
       .replace(/SERVICE_PORT/g, `${this.servicePort}`);
     await writeFile(this.envoyConfigFileName, envoyConfig);
     this.envoy = spawn("envoy", ["-c", this.envoyConfigFileName]);
