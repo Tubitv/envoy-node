@@ -34,6 +34,7 @@ export default class GrpcTestServer extends CommonTestServer {
   }
 
   async start() {
+    process.stdout.write("******");
     // start server
     await super.start();
     this.server.start();

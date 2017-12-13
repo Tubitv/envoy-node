@@ -1,17 +1,10 @@
 import EnvoyContext from "../src/envoy-context";
 import GrpcTestServer from "./lib/grpc-test-server";
 
-/**
- * Dummy test
- */
-describe("Dummy test", () => {
-  it("works if true is truthy", () => {
-    expect(true).toBeTruthy();
-  });
-
-  it("DummyClass is instantiable", () => {
-    expect(new EnvoyContext({})).toBeInstanceOf(EnvoyContext);
+describe("GRPC Test", () => {
+  it("boot the server", async () => {
     const server = new GrpcTestServer();
-    server.stop();
+    await server.start();
+    await server.stop();
   });
 });

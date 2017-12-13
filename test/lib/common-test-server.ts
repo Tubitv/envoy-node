@@ -29,7 +29,7 @@ export default abstract class CommonTestServer {
     this.envoyAdminPort = port++;
     const zipkinPort = port++;
     this.zipkin = new ZipkinMock(zipkinPort);
-    this.envoyConfigTemplate = envoyConfigTemplate;
+    this.envoyConfigTemplate = `${__dirname}/${envoyConfigTemplate}`;
     this.envoyConfigFileName = `/tmp/envoy-test-config-${this.servicePort}.yaml`;
   }
 
