@@ -1,0 +1,79 @@
+listeners:
+  # ingress
+  - address: tcp://127.0.0.1:INGRESS_PORT
+    filters:
+      - name: http_connection_manager
+        config:
+          codec_type: auto
+          stat_prefix: grpc.test.ingress
+          route_config:
+            virtual_hosts:
+              - name: local_test_server
+                domains: ["*"]
+                routes:
+                - prefix: /
+                  cluster: local_test_server
+          filters:
+            - name: router
+              config:
+                dynamic_stats: true
+          tracing:
+            operation_name: ingress
+
+  - address: tcp://127.0.0.1:EGRESS_PORT
+    filters:
+      - name: http_connection_manager
+        config:
+          codec_type: auto
+          stat_prefix: grpc.test.egress
+          route_config:
+            virtual_hosts:
+              - name: remote_test_server
+                domains:
+                - localhost:INGRESS_PORT
+                routes:
+                - prefix: /
+                  cluster: remote_test_server
+          filters:
+          - name: router
+            config: {}
+          tracing:
+            operation_name: egress
+
+# Administration interface
+admin:
+  access_log_path: /dev/null
+  address: tcp://0.0.0.0:ADMIN_PORT
+
+
+# Cluster manager
+cluster_manager:
+  clusters:
+  - name: local_test_server
+    type: static
+    connect_timeout_ms: 1000
+    lb_type: round_robin
+    hosts:
+    - url: tcp://127.0.0.1:SERVICE_PORT
+
+  - name: remote_test_server
+    type: static
+    connect_timeout_ms: 1000
+    lb_type: round_robin
+    hosts:
+    - url: tcp://127.0.0.1:INGRESS_PORT # route the traffic back
+
+  # zipkin
+  - name: zipkin
+    connect_timeout_ms: 1000
+    type: static
+    lb_type: round_robin
+    hosts:
+      - url: tcp://127.0.0.1:ZIPKIN_PORT
+
+tracing:
+  http:
+    driver:
+      type: zipkin
+      config:
+        collector_cluster: zipkin

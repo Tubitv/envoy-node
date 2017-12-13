@@ -1,6 +1,6 @@
 import { spawn, ChildProcess } from "child_process";
 import grpc, { ServerUnaryCall, sendUnaryData } from "grpc";
-
+import ZipkinMock from "./zipkin-mock";
 import { envoyFetch, EnvoyContext, EnvoyGrpcRequestParams } from "../../src/envoy-node-boilerplate";
 
 let serverId = 0;
@@ -14,15 +14,20 @@ export const TEST_PORT_START = 10000;
 export default class GrpcTestServer {
   readonly envoy: ChildProcess;
   readonly server: grpc.Server;
+  readonly zipkin: ZipkinMock;
 
   constructor() {
-    let port = TEST_PORT_START + serverId++ * 3;
+    let port = TEST_PORT_START + serverId * 5;
+    serverId += 1;
     const envoyIngressPort = port++;
     const envoyEgressPort = port++;
     const servicePort = port++;
+    const adminPort = port++;
+    const zipkinPort = port++;
 
     // TODO build envoy config
     this.envoy = spawn("echo", ["-c", "config"]);
+    this.zipkin = new ZipkinMock(zipkinPort);
 
     // start server
     this.server = new grpc.Server();
@@ -50,6 +55,7 @@ export default class GrpcTestServer {
   stop() {
     this.envoy.kill();
     this.server.forceShutdown();
+    this.zipkin.stop();
     // TODO clean up envoy config file
   }
 }
