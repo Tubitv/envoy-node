@@ -1,6 +1,6 @@
 listeners:
   # ingress
-  - address: tcp://127.0.0.1:INGRESS_PORT
+  - address: tcp://BIND_HOST:INGRESS_PORT
     filters:
       - name: http_connection_manager
         config:
@@ -12,6 +12,9 @@ listeners:
                 domains: ["*"]
                 routes:
                 - prefix: /
+                  headers:
+                  - name: content-type
+                    value: application/grpc
                   cluster: local_test_server
           filters:
             - name: router
@@ -19,8 +22,12 @@ listeners:
                 dynamic_stats: true
           tracing:
             operation_name: ingress
+          access_log:
+          - path: /tmp/envoy-test-INGRESS_PORT.ingress.log
+            filter:
+              type: not_healthcheck
 
-  - address: tcp://127.0.0.1:EGRESS_PORT
+  - address: tcp://BIND_HOST:EGRESS_PORT
     filters:
       - name: http_connection_manager
         config:
@@ -30,15 +37,24 @@ listeners:
             virtual_hosts:
               - name: remote_test_server
                 domains:
-                - localhost:INGRESS_PORT
+                - DOMAIN_NAME:INGRESS_PORT
                 routes:
                 - prefix: /
+                  headers:
+                  - name: content-type
+                    value: application/grpc
                   cluster: remote_test_server
           filters:
           - name: router
-            config: {}
+            config:
+              dynamic_stats: true
           tracing:
             operation_name: egress
+          access_log:
+          - path: /tmp/envoy-test-INGRESS_PORT.egress.log
+            filter:
+              type: not_healthcheck
+
 
 # Administration interface
 admin:
@@ -53,15 +69,17 @@ cluster_manager:
     type: static
     connect_timeout_ms: 1000
     lb_type: round_robin
+    features: http2
     hosts:
-    - url: tcp://127.0.0.1:SERVICE_PORT
+    - url: tcp://BIND_HOST:SERVICE_PORT
 
   - name: remote_test_server
     type: static
     connect_timeout_ms: 1000
     lb_type: round_robin
+    features: http2
     hosts:
-    - url: tcp://127.0.0.1:INGRESS_PORT # route the traffic back
+    - url: tcp://BIND_HOST:INGRESS_PORT # route the traffic back
 
   # zipkin
   - name: zipkin
@@ -69,7 +87,7 @@ cluster_manager:
     type: static
     lb_type: round_robin
     hosts:
-      - url: tcp://127.0.0.1:ZIPKIN_PORT
+      - url: tcp://BIND_HOST:ZIPKIN_PORT
 
 tracing:
   http:

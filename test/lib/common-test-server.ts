@@ -11,6 +11,9 @@ export const TEST_PORT_START = 10000;
 let serverId = 0;
 
 export default abstract class CommonTestServer {
+  static bindHost = "127.0.0.1";
+  static domainName = "ping.pong.test";
+
   envoy: ChildProcess;
   readonly zipkin: ZipkinMock;
   readonly servicePort: number;
@@ -40,6 +43,8 @@ export default abstract class CommonTestServer {
       .replace(/EGRESS_PORT/g, `${this.envoyEgressPort}`)
       .replace(/ADMIN_PORT/g, `${this.envoyAdminPort}`)
       .replace(/ZIPKIN_PORT/g, `${this.zipkin.port}`)
+      .replace(/BIND_HOST/g, `${CommonTestServer.bindHost}`)
+      .replace(/DOMAIN_NAME/g, `${CommonTestServer.domainName}`)
       .replace(/SERVICE_PORT/g, `${this.servicePort}`);
     await writeFile(this.envoyConfigFileName, envoyConfig);
     this.envoy = spawn("/tmp/envoy", [
@@ -49,6 +54,9 @@ export default abstract class CommonTestServer {
       "test-server"
     ]);
     this.zipkin.start();
+    this.envoy.once("exit", code => {
+      console.log(`Envoy exited: ${code}`);
+    });
   }
 
   async stop() {
