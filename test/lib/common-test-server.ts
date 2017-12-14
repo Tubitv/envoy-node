@@ -63,5 +63,7 @@ export default abstract class CommonTestServer {
     this.envoy.kill();
     this.zipkin.stop();
     await unlink(this.envoyConfigFileName);
+    await unlink(`/tmp/envoy-test-${this.servicePort}.ingress.log`);
+    await unlink(`/tmp/envoy-test-${this.servicePort}.egress.log`);
   }
 }

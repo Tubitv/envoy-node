@@ -16,17 +16,6 @@ describe("GRPC Test", () => {
     let traceId: string;
     let innerParentId: string;
 
-    // const wrapperLooksGoodHandle: LooksGood = {};
-    // const wrapperLooksGood = new Promise<boolean>((resolve, reject) => {
-    //   wrapperLooksGoodHandle.resolve = resolve;
-    //   wrapperLooksGoodHandle.reject = reject;
-    // });
-    // const innerLooksGoodHandle: LooksGood = {};
-    // const innerLooksGood = new Promise<boolean>((resolve, reject) => {
-    //   innerLooksGoodHandle.resolve = resolve;
-    //   innerLooksGoodHandle.reject = reject;
-    // });
-
     const server = new class extends GrpcTestServer {
       constructor() {
         super();
@@ -52,18 +41,14 @@ describe("GRPC Test", () => {
             metadata,
             (err: ServiceError, response) => {
               if (err) {
-                // TODO
                 callback(err, undefined);
-                // wrapperLooksGoodHandle.reject(err);
                 return;
               }
               callback(undefined, { message: response.message });
-              // wrapperLooksGoodHandle.resolve(true);
             }
           );
         } catch (e) {
           callback(e, undefined);
-          // wrapperLooksGoodHandle.reject(e);
         }
       }
 
@@ -106,9 +91,6 @@ describe("GRPC Test", () => {
         resolve(response);
       });
     });
-
-    // await wrapperLooksGood;
-    // await innerLooksGood;
 
     await server.stop();
   });

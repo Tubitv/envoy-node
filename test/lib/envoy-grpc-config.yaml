@@ -23,7 +23,7 @@ listeners:
           tracing:
             operation_name: ingress
           access_log:
-          - path: /tmp/envoy-test-INGRESS_PORT.ingress.log
+          - path: /tmp/envoy-test-SERVICE_PORT.ingress.log
             filter:
               type: not_healthcheck
 
@@ -51,7 +51,7 @@ listeners:
           tracing:
             operation_name: egress
           access_log:
-          - path: /tmp/envoy-test-INGRESS_PORT.egress.log
+          - path: /tmp/envoy-test-SERVICE_PORT.egress.log
             filter:
               type: not_healthcheck
 
