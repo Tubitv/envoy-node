@@ -3,11 +3,6 @@ import grpc, { ServerUnaryCall, sendUnaryData, ServiceError } from "grpc";
 import { EnvoyContext, EnvoyGrpcRequestParams } from "../src/envoy-node-boilerplate";
 import GrpcTestServer, { Ping } from "./lib/grpc-test-server";
 
-interface LooksGood {
-  resolve?: (value?: boolean | PromiseLike<boolean>) => void;
-  reject?: (value?: any) => void;
-}
-
 describe("GRPC Test", () => {
   it("should propagate the tracing header correctly", async () => {
     const CLIENT_TRACE_ID = `client-id-${Math.floor(Math.random() * 65536)}`;
