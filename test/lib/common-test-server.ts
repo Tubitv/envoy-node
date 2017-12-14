@@ -55,7 +55,9 @@ export default abstract class CommonTestServer {
     ]);
     this.zipkin.start();
     this.envoy.once("exit", code => {
-      console.log(`Envoy exited: ${code}`);
+      if (code) {
+        console.log(`Envoy exited abnormal: ${code}`);
+      }
     });
   }
 

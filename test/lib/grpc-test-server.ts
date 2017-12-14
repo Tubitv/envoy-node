@@ -26,7 +26,6 @@ export default abstract class GrpcTestServer extends CommonTestServer {
   abstract inner(call: ServerUnaryCall, callback: sendUnaryData): void;
 
   async start() {
-    process.stdout.write("******");
     this.server.start();
     // start server
     await super.start();
