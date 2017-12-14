@@ -10,7 +10,14 @@ export default class ZipkinMock {
   }
 
   private process_request(req: IncomingMessage, res: ServerResponse) {
-    //
+    let body = "";
+    req.on("data", chunk => (body += chunk));
+    req.on("close", () => {
+      const json = JSON.parse(body);
+      // tracing data is comming too late so omit the validation for now
+      res.statusCode = 204;
+      res.end();
+    });
   }
 
   start() {
