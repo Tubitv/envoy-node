@@ -10,7 +10,6 @@ interface LooksGood {
 
 describe("GRPC Test", () => {
   it("boot the server", async () => {
-    jasmine.DEFAULT_TIMEOUT_INTERVAL = 99999999;
     const CLIENT_TRACE_ID = `client-id-${Math.floor(Math.random() * 65536)}`;
     let requestId: string;
     let traceId: string;
@@ -60,10 +59,8 @@ describe("GRPC Test", () => {
           expect(ctx.traceId).toBe(traceId);
           expect(ctx.parentSpanId).toBe(innerParentId);
           callback(undefined, { message: "pong" });
-          // innerLooksGoodHandle.resolve(true);
         } catch (e) {
           callback(e, undefined);
-          // innerLooksGoodHandle.reject(e);
         }
       }
     }();
@@ -72,7 +69,7 @@ describe("GRPC Test", () => {
 
     // wait for envoy is up
     await new Promise(resolve => {
-      setTimeout(() => resolve(), 500);
+      setTimeout(() => resolve(), 100);
     });
 
     const clientMetadata = new grpc.Metadata();
