@@ -9,7 +9,7 @@ interface LooksGood {
 }
 
 describe("GRPC Test", () => {
-  it("boot the server", async () => {
+  it("should propagate the tracing header correctly", async () => {
     const CLIENT_TRACE_ID = `client-id-${Math.floor(Math.random() * 65536)}`;
     let requestId: string;
     let traceId: string;
