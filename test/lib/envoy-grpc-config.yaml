@@ -37,15 +37,10 @@ listeners:
             virtual_hosts:
               - name: remote_test_server
                 domains:
-                - "*" # this is a walk around for envoy's bug
                 - DOMAIN_NAME:INGRESS_PORT
                 routes:
                 - prefix: /
                   headers:
-                  # filter by header to walk around envoy's bug
-                  # https://github.com/envoyproxy/envoy/issues/2209
-                  - name: authority
-                    value: DOMAIN_NAME:INGRESS_PORT
                   - name: content-type
                     value: application/grpc
                   cluster: remote_test_server

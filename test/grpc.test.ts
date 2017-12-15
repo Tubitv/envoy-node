@@ -22,9 +22,7 @@ describe("GRPC Test", () => {
           requestId = ctx.requestId;
           traceId = ctx.traceId;
           innerParentId = ctx.spanId;
-          const params = new EnvoyGrpcRequestParams(ctx, {
-            host: `${GrpcTestServer.domainName}:${this.envoyIngressPort}`
-          });
+          const params = new EnvoyGrpcRequestParams(ctx);
           const metadata = params.assembleRequestMeta();
           const innerClient = new Ping(
             `${GrpcTestServer.bindHost}:${this.envoyEgressPort}`,
@@ -33,6 +31,9 @@ describe("GRPC Test", () => {
           innerClient.inner(
             { message: call.request.message },
             metadata,
+            {
+              host: `${GrpcTestServer.domainName}:${this.envoyIngressPort}`
+            },
             (err: ServiceError, response) => {
               if (err) {
                 callback(err, undefined);

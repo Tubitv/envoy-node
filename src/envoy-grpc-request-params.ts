@@ -43,7 +43,6 @@ export interface EnvoyGrpcRequestInit {
   retryOn?: GrpcRetryOn[];
   timeout?: number;
   perTryTimeout?: number;
-  host?: string;
 }
 
 export default class EnvoyGrpcRequestParams extends EnvoyRequestParams {
@@ -65,29 +64,22 @@ export default class EnvoyGrpcRequestParams extends EnvoyRequestParams {
   readonly perTryTimeout: number;
 
   /**
-   * the host to be set in request header, should be host_name[:port_number]
-   */
-  readonly host: string;
-
-  /**
    * Setting the retry policies, if empty param is given will not generate any headers but using
    * the default setting in Envoy's config
    * @param params the params for initialize the request params
    */
   constructor(context: EnvoyContext, params?: EnvoyGrpcRequestInit) {
-    const { maxRetries, retryOn, timeout, perTryTimeout, host }: EnvoyGrpcRequestInit = {
+    const { maxRetries, retryOn, timeout, perTryTimeout }: EnvoyGrpcRequestInit = {
       maxRetries: -1,
       retryOn: [],
       timeout: -1,
       perTryTimeout: -1,
-      host: "",
       ...params
     };
     super(context, maxRetries);
     this.retryOn = retryOn;
     this.timeout = timeout;
     this.perTryTimeout = perTryTimeout;
-    this.host = host;
   }
 
   /**
@@ -114,11 +106,6 @@ export default class EnvoyGrpcRequestParams extends EnvoyRequestParams {
 
     if (this.perTryTimeout > 0) {
       metadata.add(X_ENVOY_UPSTREAM_RQ_PER_TRY_TIMEOUT_MS, `${this.perTryTimeout}`);
-    }
-
-    if (this.host) {
-      metadata.add(HOST, this.host);
-      metadata.add(AUTHORITY, this.host);
     }
 
     return metadata;
