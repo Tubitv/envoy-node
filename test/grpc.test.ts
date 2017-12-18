@@ -1,7 +1,7 @@
 import grpc, { ServerUnaryCall, sendUnaryData, ServiceError } from "grpc";
 
 import { EnvoyContext, EnvoyGrpcRequestParams } from "../src/envoy-node-boilerplate";
-import GrpcTestServer, { Ping } from "./lib/grpc-test-server";
+import GrpcTestServer, { Ping, PingEnvoyClient } from "./lib/grpc-test-server";
 
 describe("GRPC Test", () => {
   it("should propagate the tracing header correctly", async () => {
@@ -15,49 +15,26 @@ describe("GRPC Test", () => {
         super();
       }
 
-      wrapper(call: ServerUnaryCall, callback: sendUnaryData): void {
-        try {
-          const ctx = new EnvoyContext(call.metadata);
-          expect(ctx.clientTraceId).toBe(CLIENT_TRACE_ID);
-          requestId = ctx.requestId;
-          traceId = ctx.traceId;
-          innerParentId = ctx.spanId;
-          const params = new EnvoyGrpcRequestParams(ctx);
-          const metadata = params.assembleRequestMeta();
-          const innerClient = new Ping(
-            `${GrpcTestServer.bindHost}:${this.envoyEgressPort}`,
-            grpc.credentials.createInsecure()
-          );
-          innerClient.inner(
-            { message: call.request.message },
-            metadata,
-            {
-              host: `${GrpcTestServer.domainName}:${this.envoyIngressPort}`
-            },
-            (err: ServiceError, response) => {
-              if (err) {
-                callback(err, undefined);
-                return;
-              }
-              callback(undefined, { message: response.message });
-            }
-          );
-        } catch (e) {
-          callback(e, undefined);
-        }
+      async wrapper(call: ServerUnaryCall): Promise<any> {
+        const ctx = new EnvoyContext(call.metadata);
+        expect(ctx.clientTraceId).toBe(CLIENT_TRACE_ID);
+        requestId = ctx.requestId;
+        traceId = ctx.traceId;
+        innerParentId = ctx.spanId;
+        const innerClient = new PingEnvoyClient(
+          `${GrpcTestServer.bindHost}:${this.envoyEgressPort}`,
+          ctx
+        );
+        return innerClient.inner({ message: call.request.message });
       }
 
-      inner(call: ServerUnaryCall, callback: sendUnaryData): void {
-        try {
-          const ctx = new EnvoyContext(call.metadata);
-          expect(ctx.clientTraceId).toBe(CLIENT_TRACE_ID);
-          expect(ctx.requestId).toBe(requestId);
-          expect(ctx.traceId).toBe(traceId);
-          expect(ctx.parentSpanId).toBe(innerParentId);
-          callback(undefined, { message: "pong" });
-        } catch (e) {
-          callback(e, undefined);
-        }
+      async inner(call: ServerUnaryCall): Promise<any> {
+        const ctx = new EnvoyContext(call.metadata);
+        expect(ctx.clientTraceId).toBe(CLIENT_TRACE_ID);
+        expect(ctx.requestId).toBe(requestId);
+        expect(ctx.traceId).toBe(traceId);
+        expect(ctx.parentSpanId).toBe(innerParentId);
+        return { message: "pong" };
       }
     }();
 

@@ -2,10 +2,12 @@ import { HttpHeader } from "../types/index";
 import { Metadata } from "grpc";
 
 export const ENVOY_DEFAULT_EGRESS_PORT = 12345;
+export const ENVOY_DEFAULT_EGRESS_ADDR = "127.0.0.1";
 
 export const ENVOY_EGRESS_PORT =
   parseInt(process.env.ENVOY_EGRESS_PORT || `${ENVOY_DEFAULT_EGRESS_PORT}`, 10) ||
   ENVOY_DEFAULT_EGRESS_PORT;
+export const ENVOY_EGRESS_ADDR = process.env.ENVOY_EGRESS_ADDR || ENVOY_DEFAULT_EGRESS_ADDR;
 
 export const X_B3_TRACEID = "x-b3-traceid";
 export const X_B3_SPANID = "x-b3-spanid";
@@ -22,6 +24,11 @@ export const X_ENVOY_OVERLOADED = "x-envoy-overloaded";
 export const X_ENVOY_UPSTREAM_SERVICE_TIME = "x-envoy-upstream-service-time";
 
 export default class EnvoyContext {
+  /**
+   * the binded address of envoy egress
+   */
+  readonly envoyEgressAddr: string;
+
   /**
    * The port local Envoy listening on for egress traffic.
    * (So all the egress will be sent to that port)
@@ -111,8 +118,13 @@ export default class EnvoyContext {
    */
   readonly expectedRequestTimeout: number;
 
-  constructor(meta: HttpHeader | Metadata, envoyEgressPort = ENVOY_EGRESS_PORT) {
+  constructor(
+    meta: HttpHeader | Metadata,
+    envoyEgressPort = ENVOY_EGRESS_PORT,
+    envoyEgressAddr = ENVOY_EGRESS_ADDR
+  ) {
     this.envoyEgressPort = envoyEgressPort;
+    this.envoyEgressAddr = envoyEgressAddr;
 
     if (meta instanceof Metadata) {
       const metadata: Metadata = meta;
