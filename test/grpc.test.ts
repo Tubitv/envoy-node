@@ -50,28 +50,30 @@ describe("GRPC Test", () => {
     // wait for envoy to up
     await sleep(100);
 
-    const clientMetadata = new grpc.Metadata();
-    clientMetadata.add("x-client-trace-id", CLIENT_TRACE_ID);
-    const client = new Ping(
-      `${GrpcTestServer.bindHost}:${server.envoyIngressPort}`,
-      grpc.credentials.createInsecure()
-    );
-
-    const response = await new Promise((resolve, reject) => {
-      client.wrapper({ message: "ping" }, clientMetadata, (err: ServiceError, response: any) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-        resolve(response);
+    try {
+      const clientMetadata = new grpc.Metadata();
+      clientMetadata.add("x-client-trace-id", CLIENT_TRACE_ID);
+      const client = new Ping(
+        `${GrpcTestServer.bindHost}:${server.envoyIngressPort}`,
+        grpc.credentials.createInsecure()
+      );
+      const response = await new Promise((resolve, reject) => {
+        client.wrapper({ message: "ping" }, clientMetadata, (err: ServiceError, response: any) => {
+          if (err) {
+            reject(err);
+            return;
+          }
+          resolve(response);
+        });
       });
-    });
-
-    await server.stop();
+    } finally {
+      await server.stop();
+    }
   });
 
-  it("should timeout correctly", async () => {
+  it("should handle timeout correctly", async () => {
     const CLIENT_TRACE_ID = `client-id-${Math.floor(Math.random() * 65536)}`;
+    const WRAPPER_SLEEP_TIME = 100;
     let innerCalledCount = 0;
 
     const server = new class extends GrpcTestServer {
@@ -84,15 +86,23 @@ describe("GRPC Test", () => {
           `${GrpcTestServer.domainName}:${this.envoyIngressPort}`,
           call.metadata
         ) as PingEnvoyClient;
+
+        const startTime = Date.now();
+
         try {
           const firstRequest = await innerClient.inner(
             { message: call.request.message },
             { timeout: 10 }
           );
-          console.log(firstRequest);
+          // TODO maybe will arrive here? or should not?
         } catch (e) {
-          expect(e).toBe(Error);
+          // TODO check the error
         }
+
+        const endTime = Date.now();
+
+        // TODO it looks like this is a bug of envoy, which is not working now
+        expect(endTime - startTime).toBeLessThan(WRAPPER_SLEEP_TIME);
 
         return { message: "" };
       }
@@ -101,7 +111,7 @@ describe("GRPC Test", () => {
         const ctx = new EnvoyContext(call.metadata);
         innerCalledCount++;
         if (innerCalledCount < 2) {
-          await sleep(100);
+          await sleep(WRAPPER_SLEEP_TIME);
         }
         return { message: "pong" };
       }
@@ -112,23 +122,24 @@ describe("GRPC Test", () => {
     // wait for envoy to up
     await sleep(100);
 
-    const clientMetadata = new grpc.Metadata();
-    clientMetadata.add("x-client-trace-id", CLIENT_TRACE_ID);
-    const client = new Ping(
-      `${GrpcTestServer.bindHost}:${server.envoyIngressPort}`,
-      grpc.credentials.createInsecure()
-    );
-
-    const response = await new Promise((resolve, reject) => {
-      client.wrapper({ message: "ping" }, clientMetadata, (err: ServiceError, response: any) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-        resolve(response);
+    try {
+      const clientMetadata = new grpc.Metadata();
+      clientMetadata.add("x-client-trace-id", CLIENT_TRACE_ID);
+      const client = new Ping(
+        `${GrpcTestServer.bindHost}:${server.envoyIngressPort}`,
+        grpc.credentials.createInsecure()
+      );
+      const response = await new Promise((resolve, reject) => {
+        client.wrapper({ message: "ping" }, clientMetadata, (err: ServiceError, response: any) => {
+          if (err) {
+            reject(err);
+            return;
+          }
+          resolve(response);
+        });
       });
-    });
-
-    await server.stop();
+    } finally {
+      await server.stop();
+    }
   });
 });
