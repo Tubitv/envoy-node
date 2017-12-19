@@ -8,14 +8,20 @@ listeners:
           stat_prefix: grpc.test.ingress
           route_config:
             virtual_hosts:
-              - name: local_test_server
-                domains: ["*"]
-                routes:
-                - prefix: /
-                  headers:
-                  - name: content-type
-                    value: application/grpc
-                  cluster: local_test_server
+            - name: local_test_server
+              domains: ["*"]
+              routes:
+              - prefix: /
+                headers:
+                - name: content-type
+                  value: application/grpc
+                cluster: local_test_server
+
+            request_headers_to_add:
+            - key: x-tubi-envoy-egress-port
+              value: "EGRESS_PORT"
+            - key: x-tubi-envoy-egress-addr
+              value: BIND_HOST
           filters:
             - name: router
               config:

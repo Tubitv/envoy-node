@@ -6,7 +6,8 @@ import {
   EnvoyClient,
   ClientConstructor,
   EnvoyClientConstructor,
-  EnvoyClientFuncEnabled
+  EnvoyClientFuncEnabled,
+  HttpHeader
 } from "./types";
 
 function makeAsyncFunc(name: string): RequestFunc {
@@ -49,7 +50,13 @@ export default function envoyProtoDecorator(
     readonly originalAddress: string;
     readonly envoyContext: EnvoyContext;
 
-    constructor(address: string, envoyContext: EnvoyContext) {
+    constructor(address: string, ctx: EnvoyContext | Metadata | HttpHeader) {
+      let envoyContext: EnvoyContext;
+      if (ctx instanceof EnvoyContext) {
+        envoyContext = ctx;
+      } else {
+        envoyContext = new EnvoyContext(ctx);
+      }
       super(
         `${envoyContext.envoyEgressAddr}:${envoyContext.envoyEgressPort}`,
         credentials.createInsecure()

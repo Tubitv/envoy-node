@@ -1,4 +1,4 @@
-import { ChannelCredentials, Client } from "grpc";
+import { ChannelCredentials, Client, Metadata } from "grpc";
 import EnvoyContext from "./envoy-context";
 import { EnvoyGrpcRequestInit } from "./envoy-grpc-request-params";
 
@@ -22,5 +22,5 @@ export interface EnvoyClient extends Client, EnvoyClientFuncEnabled {
 }
 
 export interface EnvoyClientConstructor {
-  new (address: string, envoyContext: EnvoyContext): EnvoyClient;
+  new (address: string, ctx: EnvoyContext | Metadata | HttpHeader): EnvoyClient;
 }

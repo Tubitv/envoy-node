@@ -1,5 +1,6 @@
 import { HttpHeader } from "./types";
 import { Metadata } from "grpc";
+import { isNumber } from "util";
 
 export const ENVOY_DEFAULT_EGRESS_PORT = 12345;
 export const ENVOY_DEFAULT_EGRESS_ADDR = "127.0.0.1";
@@ -23,6 +24,29 @@ export const X_ENVOY_EXPECTED_RQ_TIMEOUT_MS = "x-envoy-expected-rq-timeout-ms";
 export const X_ENVOY_OVERLOADED = "x-envoy-overloaded";
 export const X_ENVOY_UPSTREAM_SERVICE_TIME = "x-envoy-upstream-service-time";
 
+export const X_TUBI_ENVOY_EGRESS_PORT = "x-tubi-envoy-egress-port";
+export const X_TUBI_ENVOY_EGRESS_ADDR = "x-tubi-envoy-egress-addr";
+
+function readMetaAsStringOrUndefined(meta: Metadata, key: string) {
+  const value = meta.get(key);
+  if (value.length > 0) {
+    return value[0].toString();
+  }
+  return undefined;
+}
+
+function assignHeader(header: HttpHeader, key: string, value: string | number | undefined | null) {
+  if (value === undefined || value === null) return;
+  if (isNumber(value)) {
+    if (isNaN(value)) {
+      return;
+    }
+    header[key] = `${value}`;
+  } else {
+    header[key] = value;
+  }
+}
+
 export default class EnvoyContext {
   /**
    * the binded address of envoy egress
@@ -41,7 +65,7 @@ export default class EnvoyContext {
    * trace shares this ID.
    * See more on zipkin tracing here <https://github.com/openzipkin/b3-propagation>.
    */
-  readonly traceId: string;
+  readonly traceId?: string;
 
   /**
    * The x-b3-spanid HTTP header is used by the Zipkin tracer in Envoy. The SpanId is
@@ -50,7 +74,7 @@ export default class EnvoyContext {
    * value of the TraceId.
    * See more on zipkin tracing here <https://github.com/openzipkin/b3-propagation>.
    */
-  readonly spanId: string;
+  readonly spanId?: string;
 
   /**
    * The x-b3-parentspanid HTTP header is used by the Zipkin tracer in Envoy. The
@@ -59,7 +83,7 @@ export default class EnvoyContext {
    * is absent.
    * See more on zipkin tracing here <https://github.com/openzipkin/b3-propagation>.
    */
-  readonly parentSpanId: string;
+  readonly parentSpanId?: string;
 
   /**
    * The x-b3-sampled HTTP header is used by the Zipkin tracer in Envoy. When the Sampled
@@ -67,14 +91,14 @@ export default class EnvoyContext {
    * 0 or 1, the same value should be consistently sent downstream.
    * See more on zipkin tracing here <https://github.com/openzipkin/b3-propagation>.
    */
-  readonly sampled: string;
+  readonly sampled?: string;
 
   /**
    * The x-b3-flags HTTP header is used by the Zipkin tracer in Envoy. The encode one or
    * more options. For example, Debug is encoded as X-B3-Flags: 1.
    * See more on zipkin tracing here <https://github.com/openzipkin/b3-propagation>.
    */
-  readonly flags: string;
+  readonly flags?: string;
 
   /**
    * The x-ot-span-context HTTP header is used by Envoy to establish proper parent-child
@@ -85,7 +109,7 @@ export default class EnvoyContext {
    * propagate x-ot-span-context on the egress call to an upstream.
    * See more on tracing here <https://www.envoyproxy.io/docs/envoy/v1.5.0/intro/arch_overview/tracing.html#arch-overview-tracing>.
    */
-  readonly otSpanContext: string;
+  readonly otSpanContext?: string;
 
   /**
    * The x-request-id header is used by Envoy to uniquely identify a request as well as
@@ -102,13 +126,13 @@ export default class EnvoyContext {
    * - Stable tracing when performing random sampling via the tracing.random_sampling runtime
    *   setting or via forced tracing using the x-envoy-force-trace and x-client-trace-id headers.
    */
-  readonly requestId: string;
+  readonly requestId?: string;
 
   /**
    * If an external client sets this header, Envoy will join the provided trace ID with
    * the internally generated x-request-id.
    */
-  readonly clientTraceId: string;
+  readonly clientTraceId?: string;
 
   /**
    * This is the time in milliseconds the router expects the request to be completed. Envoy
@@ -116,29 +140,35 @@ export default class EnvoyContext {
    * on the request timeout, e.g., early exit. This is set on internal requests and is either
    * taken from the x-envoy-upstream-rq-timeout-ms header or the route timeout, in that order.
    */
-  readonly expectedRequestTimeout: number;
+  readonly expectedRequestTimeout?: number;
 
   constructor(
     meta: HttpHeader | Metadata,
-    envoyEgressPort = ENVOY_EGRESS_PORT,
-    envoyEgressAddr = ENVOY_EGRESS_ADDR
+    envoyEgressPort: number | undefined = undefined,
+    envoyEgressAddr: string | undefined = undefined
   ) {
-    this.envoyEgressPort = envoyEgressPort;
-    this.envoyEgressAddr = envoyEgressAddr;
+    let expectedRequestTimeoutString: string | undefined;
+    let envoyEgressAddrFromHeader: string | undefined;
+    let envoyEgressPortStringFromHeader: string | undefined;
 
     if (meta instanceof Metadata) {
       const metadata: Metadata = meta;
-      this.traceId = metadata.get(X_B3_TRACEID).toString();
-      this.spanId = metadata.get(X_B3_SPANID).toString();
-      this.parentSpanId = metadata.get(X_B3_PARENTSPANID).toString();
-      this.sampled = metadata.get(X_B3_SAMPLED).toString();
-      this.flags = metadata.get(X_B3_FLAGS).toString();
-      this.otSpanContext = metadata.get(X_OT_SPAN_CONTEXT).toString();
-      this.requestId = metadata.get(X_REQUEST_ID).toString();
-      this.clientTraceId = metadata.get(X_CLIENT_TRACE_ID).toString();
-      this.expectedRequestTimeout = parseInt(
-        metadata.get(X_ENVOY_EXPECTED_RQ_TIMEOUT_MS).toString(),
-        10
+      this.traceId = readMetaAsStringOrUndefined(metadata, X_B3_TRACEID);
+      this.spanId = readMetaAsStringOrUndefined(metadata, X_B3_SPANID);
+      this.parentSpanId = readMetaAsStringOrUndefined(metadata, X_B3_PARENTSPANID);
+      this.sampled = readMetaAsStringOrUndefined(metadata, X_B3_SAMPLED);
+      this.flags = readMetaAsStringOrUndefined(metadata, X_B3_FLAGS);
+      this.otSpanContext = readMetaAsStringOrUndefined(metadata, X_OT_SPAN_CONTEXT);
+      this.requestId = readMetaAsStringOrUndefined(metadata, X_REQUEST_ID);
+      this.clientTraceId = readMetaAsStringOrUndefined(metadata, X_CLIENT_TRACE_ID);
+      expectedRequestTimeoutString = readMetaAsStringOrUndefined(
+        metadata,
+        X_ENVOY_EXPECTED_RQ_TIMEOUT_MS
+      );
+      envoyEgressAddrFromHeader = readMetaAsStringOrUndefined(metadata, X_TUBI_ENVOY_EGRESS_ADDR);
+      envoyEgressPortStringFromHeader = readMetaAsStringOrUndefined(
+        metadata,
+        X_TUBI_ENVOY_EGRESS_PORT
       );
     } else {
       const httpHeader: HttpHeader = meta;
@@ -150,8 +180,20 @@ export default class EnvoyContext {
       this.otSpanContext = httpHeader[X_OT_SPAN_CONTEXT];
       this.requestId = httpHeader[X_REQUEST_ID];
       this.clientTraceId = httpHeader[X_CLIENT_TRACE_ID];
-      this.expectedRequestTimeout = parseInt(httpHeader[X_ENVOY_EXPECTED_RQ_TIMEOUT_MS], 10);
+      expectedRequestTimeoutString = httpHeader[X_ENVOY_EXPECTED_RQ_TIMEOUT_MS];
+      envoyEgressAddrFromHeader = httpHeader[X_TUBI_ENVOY_EGRESS_ADDR];
+      envoyEgressPortStringFromHeader = httpHeader[X_TUBI_ENVOY_EGRESS_PORT];
     }
+
+    if (expectedRequestTimeoutString !== undefined && expectedRequestTimeoutString !== "") {
+      this.expectedRequestTimeout = parseInt(expectedRequestTimeoutString, 10);
+    }
+
+    this.envoyEgressPort =
+      envoyEgressPort ||
+      (envoyEgressPortStringFromHeader && parseInt(envoyEgressPortStringFromHeader, 10)) ||
+      ENVOY_EGRESS_PORT;
+    this.envoyEgressAddr = envoyEgressAddr || envoyEgressAddrFromHeader || ENVOY_EGRESS_ADDR;
   }
 
   /**
@@ -159,15 +201,15 @@ export default class EnvoyContext {
    * See more here <https://www.envoyproxy.io/docs/envoy/v1.5.0/intro/arch_overview/tracing.html#trace-context-propagation>
    */
   assembleTracingHeader(): HttpHeader {
-    return {
-      [X_B3_TRACEID]: this.traceId,
-      [X_B3_SPANID]: this.spanId,
-      [X_B3_PARENTSPANID]: this.parentSpanId,
-      [X_B3_SAMPLED]: this.sampled,
-      [X_B3_FLAGS]: this.flags,
-      [X_OT_SPAN_CONTEXT]: this.otSpanContext,
-      [X_REQUEST_ID]: this.requestId,
-      [X_CLIENT_TRACE_ID]: this.clientTraceId
-    };
+    const header: HttpHeader = {};
+    assignHeader(header, X_B3_TRACEID, this.traceId);
+    assignHeader(header, X_B3_SPANID, this.spanId);
+    assignHeader(header, X_B3_PARENTSPANID, this.parentSpanId);
+    assignHeader(header, X_B3_SAMPLED, this.sampled);
+    assignHeader(header, X_B3_FLAGS, this.flags);
+    assignHeader(header, X_OT_SPAN_CONTEXT, this.otSpanContext);
+    assignHeader(header, X_REQUEST_ID, this.requestId);
+    assignHeader(header, X_CLIENT_TRACE_ID, this.clientTraceId);
+    return header;
   }
 }

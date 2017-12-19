@@ -16,15 +16,15 @@ describe("GRPC Test", () => {
       }
 
       async wrapper(call: ServerUnaryCall): Promise<any> {
-        const ctx = new EnvoyContext(call.metadata, this.envoyEgressPort, GrpcTestServer.bindHost);
+        const innerClient = new PingEnvoyClient(
+          `${GrpcTestServer.domainName}:${this.envoyIngressPort}`,
+          call.metadata
+        );
+        const ctx = innerClient.envoyContext;
         expect(ctx.clientTraceId).toBe(CLIENT_TRACE_ID);
         requestId = ctx.requestId;
         traceId = ctx.traceId;
         innerParentId = ctx.spanId;
-        const innerClient = new PingEnvoyClient(
-          `${GrpcTestServer.domainName}:${this.envoyIngressPort}`,
-          ctx
-        );
         return innerClient.inner({ message: call.request.message });
       }
 
