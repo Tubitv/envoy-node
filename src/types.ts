@@ -3,7 +3,7 @@ import EnvoyContext from "./envoy-context";
 import { EnvoyGrpcRequestInit } from "./envoy-grpc-request-params";
 
 export interface HttpHeader {
-  [s: string]: string;
+  [s: string]: string | string[];
 }
 
 export interface ClientConstructor {

@@ -35,6 +35,17 @@ function readMetaAsStringOrUndefined(meta: Metadata, key: string) {
   return undefined;
 }
 
+function readHeaderOrUndefined(header: HttpHeader, key: string) {
+  const value = header[key];
+  if (!value) {
+    return undefined;
+  }
+  if (Array.isArray(value)) {
+    return value[0];
+  }
+  return value;
+}
+
 function assignHeader(header: HttpHeader, key: string, value: string | number | undefined | null) {
   if (value === undefined || value === null) return;
   if (isNumber(value)) {
@@ -172,17 +183,20 @@ export default class EnvoyContext {
       );
     } else {
       const httpHeader: HttpHeader = meta;
-      this.traceId = httpHeader[X_B3_TRACEID];
-      this.spanId = httpHeader[X_B3_SPANID];
-      this.parentSpanId = httpHeader[X_B3_PARENTSPANID];
-      this.sampled = httpHeader[X_B3_SAMPLED];
-      this.flags = httpHeader[X_B3_FLAGS];
-      this.otSpanContext = httpHeader[X_OT_SPAN_CONTEXT];
-      this.requestId = httpHeader[X_REQUEST_ID];
-      this.clientTraceId = httpHeader[X_CLIENT_TRACE_ID];
-      expectedRequestTimeoutString = httpHeader[X_ENVOY_EXPECTED_RQ_TIMEOUT_MS];
-      envoyEgressAddrFromHeader = httpHeader[X_TUBI_ENVOY_EGRESS_ADDR];
-      envoyEgressPortStringFromHeader = httpHeader[X_TUBI_ENVOY_EGRESS_PORT];
+      this.traceId = readHeaderOrUndefined(httpHeader, X_B3_TRACEID);
+      this.spanId = readHeaderOrUndefined(httpHeader, X_B3_SPANID);
+      this.parentSpanId = readHeaderOrUndefined(httpHeader, X_B3_PARENTSPANID);
+      this.sampled = readHeaderOrUndefined(httpHeader, X_B3_SAMPLED);
+      this.flags = readHeaderOrUndefined(httpHeader, X_B3_FLAGS);
+      this.otSpanContext = readHeaderOrUndefined(httpHeader, X_OT_SPAN_CONTEXT);
+      this.requestId = readHeaderOrUndefined(httpHeader, X_REQUEST_ID);
+      this.clientTraceId = readHeaderOrUndefined(httpHeader, X_CLIENT_TRACE_ID);
+      expectedRequestTimeoutString = readHeaderOrUndefined(
+        httpHeader,
+        X_ENVOY_EXPECTED_RQ_TIMEOUT_MS
+      );
+      envoyEgressAddrFromHeader = readHeaderOrUndefined(httpHeader, X_TUBI_ENVOY_EGRESS_ADDR);
+      envoyEgressPortStringFromHeader = readHeaderOrUndefined(httpHeader, X_TUBI_ENVOY_EGRESS_PORT);
     }
 
     if (expectedRequestTimeoutString !== undefined && expectedRequestTimeoutString !== "") {
