@@ -4,6 +4,7 @@ import GrpcTestServer, { Ping, PingEnvoyClient } from "./lib/grpc-test-server";
 import { sleep } from "./lib/utils";
 import { RequestFunc, EnvoyClient } from "../src/types";
 import EnvoyContext from "../src/envoy-context";
+import { GrpcRetryOn } from "../src/envoy-node-boilerplate";
 
 interface PingEnvoyClient extends EnvoyClient {
   inner: RequestFunc;
@@ -90,7 +91,7 @@ describe("GRPC Test", () => {
         const startTime = Date.now();
 
         try {
-          const firstRequest = await innerClient.inner(
+          const firstResponse = await innerClient.inner(
             { message: call.request.message },
             { timeout: 10 }
           );
@@ -142,4 +143,84 @@ describe("GRPC Test", () => {
       await server.stop();
     }
   });
+
+  it("should handle retry correctly", async () => {
+    const CLIENT_TRACE_ID = `client-id-${Math.floor(Math.random() * 65536)}`;
+    let innerCalledCount = 0;
+
+    const server = new class extends GrpcTestServer {
+      constructor() {
+        super();
+      }
+
+      async wrapper(call: ServerUnaryCall): Promise<any> {
+        const innerClient = new PingEnvoyClient(
+          `${GrpcTestServer.domainName}:${this.envoyIngressPort}`,
+          call.metadata
+        ) as PingEnvoyClient;
+
+        const startTime = Date.now();
+
+        try {
+          const firstResponse = await innerClient.inner(
+            { message: call.request.message },
+            {
+              maxRetries: 2,
+              retryOn: [GrpcRetryOn.DEADLINE_EXCEEDED]
+            }
+          );
+          console.log(">>> response", firstResponse);
+          // TODO should be here
+          // expect message === "pong 2"
+        } catch (e) {
+          console.log(">>> error", e);
+          // TODO should not be here
+        }
+        const endTime = Date.now();
+        return { message: "" };
+      }
+
+      async inner(call: ServerUnaryCall): Promise<any> {
+        const ctx = new EnvoyContext(call.metadata);
+        innerCalledCount++;
+        if (innerCalledCount < 2) {
+          // TODO it looks like grpc-node is not working for sending status in header
+          // but sending "trailers" ???
+          const error = new Error("DEADLINE_EXCEEDED") as ServiceError;
+          error.code = grpc.status.DEADLINE_EXCEEDED;
+          error.metadata = call.metadata;
+          throw error;
+        }
+        return { message: `pong ${innerCalledCount}` };
+      }
+    }();
+
+    await server.start();
+
+    // wait for envoy to up
+    await sleep(100);
+
+    try {
+      const clientMetadata = new grpc.Metadata();
+      clientMetadata.add("x-client-trace-id", CLIENT_TRACE_ID);
+      const client = new Ping(
+        `${GrpcTestServer.bindHost}:${server.envoyIngressPort}`,
+        grpc.credentials.createInsecure()
+      );
+      const response = await new Promise((resolve, reject) => {
+        client.wrapper({ message: "ping" }, clientMetadata, (err: ServiceError, response: any) => {
+          if (err) {
+            reject(err);
+            return;
+          }
+          resolve(response);
+        });
+      });
+      expect(innerCalledCount).toBe(2);
+    } finally {
+      await server.stop();
+    }
+  });
+
+  // TODO test perTryTimeout
 });
