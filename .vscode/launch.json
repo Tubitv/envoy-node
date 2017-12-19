@@ -9,8 +9,11 @@
       "request": "launch",
       "name": "Jest Tests",
       "program": "${workspaceRoot}/node_modules/jest/bin/jest.js",
+      "sourceMaps": true,
       "args": [
-        "-i"
+        "-i",
+        "--runInBand", // https://facebook.github.io/jest/docs/en/cli.html#runinband - don't parallelize
+        "--no-cache" // https://facebook.github.io/jest/docs/en/cli.html#cache - just avoid caching issues
       ],
       // "preLaunchTask": "build",
       "internalConsoleOptions": "openOnSessionStart",
