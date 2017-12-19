@@ -8,18 +8,16 @@ export const { Ping } = testProto;
 // tslint:disable-next-line:variable-name
 export const PingEnvoyClient = envoyProtoDecorator(Ping);
 
-function wrapImpl(
-  func: (call: ServerUnaryCall) => Promise<any>,
-  call: ServerUnaryCall,
-  callback: sendUnaryData
-): void {
-  func(call)
-    .then(result => {
-      callback(undefined, result);
-    })
-    .catch(reason => {
-      callback(reason, undefined);
-    });
+function wrapImpl(func: (call: ServerUnaryCall) => Promise<any>) {
+  return (call: ServerUnaryCall, callback: sendUnaryData) => {
+    func(call)
+      .then(result => {
+        callback(undefined, result);
+      })
+      .catch(reason => {
+        callback(reason, undefined);
+      });
+  };
 }
 
 export default abstract class GrpcTestServer extends CommonTestServer {
@@ -29,8 +27,8 @@ export default abstract class GrpcTestServer extends CommonTestServer {
     super("./envoy-grpc-config.yaml");
     this.server = new grpc.Server();
     this.server.addService(Ping.service, {
-      wrapper: wrapImpl.bind(this, this.wrapper),
-      inner: wrapImpl.bind(this, this.inner)
+      wrapper: wrapImpl(this.wrapper.bind(this)),
+      inner: wrapImpl(this.inner.bind(this))
     });
     this.server.bind(
       `${GrpcTestServer.bindHost}:${this.servicePort}`,

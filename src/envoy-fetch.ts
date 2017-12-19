@@ -2,7 +2,7 @@ import fetch, { RequestInit, Response } from "node-fetch";
 import { parse as parseUrl } from "url";
 
 import EnvoyContext, { X_ENVOY_OVERLOADED, X_ENVOY_UPSTREAM_SERVICE_TIME } from "./envoy-context";
-import { HttpHeader } from "../types";
+import { HttpHeader } from "./types";
 import EnvoyHttpRequestParams from "./envoy-http-request-params";
 
 export interface EnvoyResponse extends Response {

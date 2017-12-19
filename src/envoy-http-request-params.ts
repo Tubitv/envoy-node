@@ -3,7 +3,7 @@ import EnvoyRequestParams, {
   X_ENVOY_UPSTREAM_RQ_TIMEOUT_MS,
   X_ENVOY_UPSTREAM_RQ_PER_TRY_TIMEOUT_MS
 } from "./envoy-request-params";
-import { HttpHeader } from "../types/index";
+import { HttpHeader } from "./types";
 import EnvoyContext from "./envoy-context";
 
 export const X_ENVOY_RETRY_ON = "x-envoy-retry-on";

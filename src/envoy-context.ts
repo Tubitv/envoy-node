@@ -1,4 +1,4 @@
-import { HttpHeader } from "../types/index";
+import { HttpHeader } from "./types";
 import { Metadata } from "grpc";
 
 export const ENVOY_DEFAULT_EGRESS_PORT = 12345;
