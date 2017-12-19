@@ -1,18 +1,20 @@
 import grpc, { ServerUnaryCall, sendUnaryData, ServiceError } from "grpc";
 import CommonTestServer from "./common-test-server";
 import envoyProtoDecorator from "../../src/envoy-proto-decorator";
+import { EnvoyClientConstructor } from "../../src/types";
 
 const PROTO_PATH = __dirname + "/ping.proto";
 const testProto: any = grpc.load(PROTO_PATH).test;
 export const { Ping } = testProto;
 // tslint:disable-next-line:variable-name
-export const PingEnvoyClient = envoyProtoDecorator(Ping);
+export const PingEnvoyClient: EnvoyClientConstructor = envoyProtoDecorator(Ping);
 
 function wrapImpl(func: (call: ServerUnaryCall) => Promise<any>) {
   return (call: ServerUnaryCall, callback: sendUnaryData) => {
     func(call)
       .then(result => {
-        callback(undefined, result);
+        // tslint:disable-next-line:no-null-keyword
+        callback(null, result);
       })
       .catch(reason => {
         callback(reason, undefined);

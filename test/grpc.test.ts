@@ -13,9 +13,9 @@ interface PingEnvoyClient extends EnvoyClient {
 describe("GRPC Test", () => {
   it("should propagate the tracing header correctly", async () => {
     const CLIENT_TRACE_ID = `client-id-${Math.floor(Math.random() * 65536)}`;
-    let requestId: string;
-    let traceId: string;
-    let innerParentId: string;
+    let requestId: string | undefined;
+    let traceId: string | undefined;
+    let innerParentId: string | undefined;
 
     const server = new class extends GrpcTestServer {
       constructor() {
@@ -58,7 +58,7 @@ describe("GRPC Test", () => {
     );
 
     const response = await new Promise((resolve, reject) => {
-      client.wrapper({ message: "ping" }, clientMetadata, (err: ServiceError, response) => {
+      client.wrapper({ message: "ping" }, clientMetadata, (err: ServiceError, response: any) => {
         if (err) {
           reject(err);
           return;
@@ -120,7 +120,7 @@ describe("GRPC Test", () => {
     );
 
     const response = await new Promise((resolve, reject) => {
-      client.wrapper({ message: "ping" }, clientMetadata, (err: ServiceError, response) => {
+      client.wrapper({ message: "ping" }, clientMetadata, (err: ServiceError, response: any) => {
         if (err) {
           reject(err);
           return;
