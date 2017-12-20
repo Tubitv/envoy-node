@@ -39,6 +39,7 @@ export default abstract class HttpTestServer extends CommonTestServer {
       })
       .catch((err: HttpError) => {
         res.statusCode = err.statusCode || 500;
+        console.log("return error:", res.statusCode);
         res.write(stringifyError(err));
         res.end();
       });

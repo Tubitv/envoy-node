@@ -45,7 +45,7 @@ export default abstract class CommonTestServer {
       .replace(/DOMAIN_NAME/g, `${CommonTestServer.domainName}`)
       .replace(/SERVICE_PORT/g, `${this.servicePort}`);
     await writeFile(this.envoyConfigFileName, envoyConfig);
-    this.envoy = spawn("/tmp/envoy", [
+    this.envoy = spawn("envoy", [
       "-c",
       this.envoyConfigFileName,
       "--service-cluster",

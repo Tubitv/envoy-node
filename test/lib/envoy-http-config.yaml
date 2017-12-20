@@ -42,6 +42,11 @@ listeners:
                 - DOMAIN_NAME:INGRESS_PORT
                 routes:
                 - prefix: /
+                  # it looks like envoy cannot set it by header
+                  timeout_ms: 100
+                  retry_policy:
+                    retry_on: retriable-4xx
+                    num_retries: 1
                   cluster: remote_test_server
           filters:
           - name: router

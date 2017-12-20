@@ -27,18 +27,27 @@ export default class EnvoyHttpClient {
       return undefined;
     }
     const contentType = response.headers.get("content-type");
-    if (contentType !== "application/json") {
+    if (contentType !== "application/json" && !contentType.startsWith("text/")) {
       const err = new Error(`Unexpected content type: ${contentType}, http status: ${$statusCode}`);
       const body = await response.text();
-      Object.assign(err, { body });
+      Object.assign(err, { $statusCode, body });
       throw err;
     }
-    const result = await response.json();
-    if ($statusCode !== 200) {
-      result.$statusCode = result.$statusCode || $statusCode;
-      throw result;
+    if (contentType === "application/json") {
+      const result = await response.json();
+      if ($statusCode >= 400) {
+        result.$statusCode = result.$statusCode || $statusCode;
+        throw result;
+      }
+      return result;
     }
-    return result;
+    const text = await response.text();
+    if ($statusCode !== 200) {
+      const error = new Error(text);
+      Object.assign(error, { $statusCode });
+      throw error;
+    }
+    return text;
   }
 
   async get(url: string, init?: EnvoyHttpRequestInit): Promise<any> {
