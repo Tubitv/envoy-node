@@ -4,7 +4,7 @@ listeners:
     filters:
       - name: http_connection_manager
         config:
-          codec_type: http
+          codec_type: http1
           stat_prefix: http.test.ingress
           route_config:
             virtual_hosts:
@@ -33,7 +33,7 @@ listeners:
     filters:
       - name: http_connection_manager
         config:
-          codec_type: http
+          codec_type: http1
           stat_prefix: http.test.egress
           route_config:
             virtual_hosts:

@@ -20,7 +20,7 @@ describe("GRPC Test", () => {
 
     const server = new class extends GrpcTestServer {
       constructor() {
-        super();
+        super(0);
       }
 
       async wrapper(call: ServerUnaryCall): Promise<any> {
@@ -79,7 +79,7 @@ describe("GRPC Test", () => {
 
     const server = new class extends GrpcTestServer {
       constructor() {
-        super();
+        super(1);
       }
 
       async wrapper(call: ServerUnaryCall): Promise<any> {
@@ -150,7 +150,7 @@ describe("GRPC Test", () => {
 
     const server = new class extends GrpcTestServer {
       constructor() {
-        super();
+        super(2);
       }
 
       async wrapper(call: ServerUnaryCall): Promise<any> {

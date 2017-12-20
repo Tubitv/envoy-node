@@ -24,8 +24,8 @@ export default async function envoyFetch(
   url: string,
   init?: RequestInit
 ): Promise<EnvoyResponse> {
-  const { protocol, host, hostname, path } = parseUrl(url);
-  if (!protocol || !host || !hostname || !path) {
+  const { protocol, host, path } = parseUrl(url);
+  if (!protocol || !host || !path) {
     throw new Error("Cannot read the URL for envoy to fetch");
   }
   if (protocol !== "http:") {
@@ -39,9 +39,7 @@ export default async function envoyFetch(
   refinedInit.headers = {
     ...oldHeaders,
     ...envoyParams.assembleRequestHeaders(),
-    // we are likely to assign host (hostname + port) here
-    // but envoy has a bug, if you specify a port number, it returns 404
-    host: hostname
+    host
   };
   const response = await fetch(
     `http://${envoyParams.context.envoyEgressAddr}:${envoyParams.context.envoyEgressPort}${path}`,

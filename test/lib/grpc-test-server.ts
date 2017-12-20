@@ -25,8 +25,8 @@ function wrapImpl(func: (call: ServerUnaryCall) => Promise<any>) {
 export default abstract class GrpcTestServer extends CommonTestServer {
   readonly server: grpc.Server;
 
-  constructor() {
-    super("./envoy-grpc-config.yaml");
+  constructor(serverId: number) {
+    super("./envoy-grpc-config.yaml", serverId);
     this.server = new grpc.Server();
     this.server.addService(Ping.service, {
       wrapper: wrapImpl(this.wrapper.bind(this)),

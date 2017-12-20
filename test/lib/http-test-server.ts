@@ -1,5 +1,5 @@
 import http, { Server, IncomingMessage, ServerResponse } from "http";
-
+import { APPLICATION_JSON } from "../../src/envoy-http-client";
 import CommonTestServer from "./common-test-server";
 
 export interface HttpError extends Error {
@@ -10,11 +10,15 @@ export interface Request extends IncomingMessage {
   body?: any;
 }
 
+function stringifyError(err: Error) {
+  return JSON.stringify(err, Object.getOwnPropertyNames(err));
+}
+
 export default abstract class HttpTestServer extends CommonTestServer {
   readonly server: Server;
 
-  constructor() {
-    super("./envoy-http-config.yaml");
+  constructor(serverId: number) {
+    super("./envoy-http-config.yaml", serverId);
     this.server = http.createServer(this.processRequest);
   }
 
@@ -26,25 +30,25 @@ export default abstract class HttpTestServer extends CommonTestServer {
     asyncFunc: (request: any) => Promise<any>,
     res: ServerResponse
   ): void {
-    asyncFunc(request)
-      .then(response => {
+    asyncFunc
+      .call(this, request)
+      .then((response: any) => {
         res.statusCode = 200;
         res.write(JSON.stringify(response));
         res.end();
       })
       .catch((err: HttpError) => {
-        if (err.statusCode) {
-          res.statusCode = err.statusCode;
-          res.write(JSON.stringify(err));
-          res.end();
-        }
+        res.statusCode = err.statusCode || 500;
+        res.write(stringifyError(err));
+        res.end();
       });
   }
 
-  private processRequest(req: IncomingMessage, res: ServerResponse) {
+  private processRequest = (req: IncomingMessage, res: ServerResponse) => {
     let body = "";
     req.on("data", chunk => (body += chunk));
-    req.on("close", () => {
+    req.on("end", () => {
+      res.setHeader("content-type", APPLICATION_JSON);
       if (req.method === "POST") {
         const request = req as Request;
         request.body = JSON.parse(body);
@@ -57,9 +61,10 @@ export default abstract class HttpTestServer extends CommonTestServer {
         }
       }
       res.statusCode = 404;
+      res.write(stringifyError(new Error("HTTP 404 NOT FOUND")));
       res.end();
     });
-  }
+  };
 
   async start() {
     this.server.listen(this.servicePort);

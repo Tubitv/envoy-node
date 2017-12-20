@@ -8,7 +8,6 @@ const writeFile = util.promisify(fs.writeFile);
 const unlink = util.promisify(fs.unlink);
 
 export const TEST_PORT_START = 10000;
-let serverId = 0;
 
 export default abstract class CommonTestServer {
   static bindHost = "127.0.0.1";
@@ -23,8 +22,7 @@ export default abstract class CommonTestServer {
   readonly envoyConfigTemplate: string;
   readonly envoyConfigFileName: string;
 
-  constructor(envoyConfigTemplate: string) {
-    serverId += 1;
+  constructor(envoyConfigTemplate: string, serverId: number) {
     let port = TEST_PORT_START + serverId * 10;
     this.servicePort = port++;
     this.envoyIngressPort = port++;
@@ -64,8 +62,8 @@ export default abstract class CommonTestServer {
   async stop() {
     this.envoy.kill();
     this.zipkin.stop();
-    await unlink(this.envoyConfigFileName);
-    await unlink(`/tmp/envoy-test-${this.servicePort}.ingress.log`);
-    await unlink(`/tmp/envoy-test-${this.servicePort}.egress.log`);
+    // await unlink(this.envoyConfigFileName);
+    // await unlink(`/tmp/envoy-test-${this.servicePort}.ingress.log`);
+    // await unlink(`/tmp/envoy-test-${this.servicePort}.egress.log`);
   }
 }
