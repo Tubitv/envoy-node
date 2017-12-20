@@ -38,6 +38,7 @@ listeners:
       - name: http_connection_manager
         config:
           codec_type: auto
+          use_remote_address: true
           stat_prefix: grpc.test.egress
           route_config:
             virtual_hosts:

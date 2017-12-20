@@ -66,7 +66,7 @@ describe("HTTP Test", () => {
 
   it("should handle timeout correctly", async () => {
     const CLIENT_TRACE_ID = `client-id-${Math.floor(Math.random() * 65536)}`;
-    const WRAPPER_SLEEP_TIME = 100;
+    const WRAPPER_SLEEP_TIME = 200;
     let innerCalledCount = 0;
 
     const server = new class extends HttpTestServer {
@@ -79,6 +79,7 @@ describe("HTTP Test", () => {
         const ctx = client.envoyContext;
         expect(ctx.clientTraceId).toBe(CLIENT_TRACE_ID);
         const startTime = Date.now();
+        let http504Happened = false;
         // send request to inner
         try {
           const innerResponse = await client.post(
@@ -89,9 +90,10 @@ describe("HTTP Test", () => {
             }
           );
         } catch (e) {
-          console.log(e);
           expect(e.$statusCode).toBe(504);
+          http504Happened = true;
         }
+        expect(http504Happened).toBeTruthy();
         const duration = Date.now() - startTime;
         expect(duration).toBeLessThan(WRAPPER_SLEEP_TIME);
         return { message: "pong" };
@@ -127,19 +129,16 @@ describe("HTTP Test", () => {
   it("should handle retry correctly", async () => {
     const CLIENT_TRACE_ID = `client-id-${Math.floor(Math.random() * 65536)}`;
     let innerCalledCount = 0;
-    let callTime: number;
-    let lastTime: number;
 
     const server = new class extends HttpTestServer {
       constructor() {
-        super(5);
+        super(9);
       }
 
       async wrapper(request: Request): Promise<any> {
         const client = new EnvoyHttpClient(request.headers as HttpHeader);
         const ctx = client.envoyContext;
         expect(ctx.clientTraceId).toBe(CLIENT_TRACE_ID);
-        callTime = Date.now();
         // send request to inner
         const response = await client.post(
           `http://${HttpTestServer.domainName}:${this.envoyIngressPort}/inner`,
@@ -149,17 +148,11 @@ describe("HTTP Test", () => {
             maxRetries: 1
           }
         );
-        console.log("done time", Date.now() - callTime);
         return response;
       }
 
       async inner(request: Request): Promise<any> {
         innerCalledCount++;
-        console.log("inner call", Date.now() - callTime, request.headers);
-        if (lastTime) {
-          console.log("from last", Date.now() - lastTime);
-        }
-        lastTime = Date.now();
         if (innerCalledCount < 2) {
           const err = new Error("HTTP 409");
           Object.assign(err, { statusCode: 409 });

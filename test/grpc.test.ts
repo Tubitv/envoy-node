@@ -159,33 +159,19 @@ describe("GRPC Test", () => {
           call.metadata
         ) as PingEnvoyClient;
 
-        const startTime = Date.now();
-
-        try {
-          const firstResponse = await innerClient.inner(
-            { message: call.request.message },
-            {
-              maxRetries: 2,
-              retryOn: [GrpcRetryOn.DEADLINE_EXCEEDED]
-            }
-          );
-          console.log(">>> response", firstResponse);
-          // TODO should be here
-          // expect message === "pong 2"
-        } catch (e) {
-          console.log(">>> error", e);
-          // TODO should not be here
-        }
-        const endTime = Date.now();
-        return { message: "" };
+        return innerClient.inner(
+          { message: call.request.message },
+          {
+            maxRetries: 2,
+            retryOn: [GrpcRetryOn.DEADLINE_EXCEEDED]
+          }
+        );
       }
 
       async inner(call: ServerUnaryCall): Promise<any> {
         const ctx = new EnvoyContext(call.metadata);
         innerCalledCount++;
         if (innerCalledCount < 2) {
-          // TODO it looks like grpc-node is not working for sending status in header
-          // but sending "trailers" ???
           const error = new Error("DEADLINE_EXCEEDED") as ServiceError;
           error.code = grpc.status.DEADLINE_EXCEEDED;
           error.metadata = call.metadata;
@@ -207,7 +193,7 @@ describe("GRPC Test", () => {
         `${GrpcTestServer.bindHost}:${server.envoyIngressPort}`,
         grpc.credentials.createInsecure()
       );
-      const response = await new Promise((resolve, reject) => {
+      const response = await new Promise<any>((resolve, reject) => {
         client.wrapper({ message: "ping" }, clientMetadata, (err: ServiceError, response: any) => {
           if (err) {
             reject(err);
@@ -217,6 +203,7 @@ describe("GRPC Test", () => {
         });
       });
       expect(innerCalledCount).toBe(2);
+      expect(response.message).toBe("pong 2");
     } finally {
       await server.stop();
     }
