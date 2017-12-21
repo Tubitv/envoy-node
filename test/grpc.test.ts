@@ -26,7 +26,7 @@ describe("GRPC Test", () => {
       async wrapper(call: ServerUnaryCall): Promise<any> {
         const innerClient = new PingEnvoyClient(
           `${GrpcTestServer.domainName}:${this.envoyIngressPort}`,
-          call.metadata
+          new EnvoyContext(call.metadata)
         ) as PingEnvoyClient;
         const ctx = innerClient.envoyContext;
         expect(ctx.clientTraceId).toBe(CLIENT_TRACE_ID);
@@ -209,5 +209,79 @@ describe("GRPC Test", () => {
     }
   });
 
-  // TODO test perTryTimeout
+  it("should handle mutilple retry timeout correctly", async () => {
+    const CLIENT_TRACE_ID = `client-id-${Math.floor(Math.random() * 65536)}`;
+    let innerCalledCount = 0;
+
+    const server = new class extends GrpcTestServer {
+      constructor() {
+        super(9);
+      }
+
+      async wrapper(call: ServerUnaryCall): Promise<any> {
+        const innerClient = new PingEnvoyClient(
+          `${GrpcTestServer.domainName}:${this.envoyIngressPort}`,
+          call.metadata
+        ) as PingEnvoyClient;
+
+        let errorHappened = false;
+
+        try {
+          await innerClient.inner(
+            { message: call.request.message },
+            {
+              maxRetries: 3,
+              retryOn: [GrpcRetryOn.DEADLINE_EXCEEDED],
+              perTryTimeout: 100
+            }
+          );
+        } catch (e) {
+          errorHappened = true;
+          expect(e.message).toBe("Received http2 header with status: 504");
+        }
+        expect(errorHappened).toBeTruthy();
+        expect(innerCalledCount).toBe(2);
+      }
+
+      async inner(call: ServerUnaryCall): Promise<any> {
+        const ctx = new EnvoyContext(call.metadata);
+        innerCalledCount++;
+        if (innerCalledCount === 2) {
+          await sleep(110);
+        }
+        if (innerCalledCount < 3) {
+          const error = new Error("DEADLINE_EXCEEDED") as ServiceError;
+          error.code = grpc.status.DEADLINE_EXCEEDED;
+          error.metadata = call.metadata;
+          throw error;
+        }
+        return { message: `pong ${innerCalledCount}` };
+      }
+    }();
+
+    await server.start();
+
+    // wait for envoy to up
+    await sleep(100);
+
+    try {
+      const clientMetadata = new grpc.Metadata();
+      clientMetadata.add("x-client-trace-id", CLIENT_TRACE_ID);
+      const client = new Ping(
+        `${GrpcTestServer.bindHost}:${server.envoyIngressPort}`,
+        grpc.credentials.createInsecure()
+      );
+      await new Promise<any>((resolve, reject) => {
+        client.wrapper({ message: "ping" }, clientMetadata, (err: ServiceError, response: any) => {
+          if (err) {
+            reject(err);
+            return;
+          }
+          resolve(response);
+        });
+      });
+    } finally {
+      await server.stop();
+    }
+  });
 });

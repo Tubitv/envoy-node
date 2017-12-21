@@ -72,7 +72,7 @@ export default function envoyProtoDecorator(
     // tslint:disable-next-line:only-arrow-functions
     prototype[name] = makeAsyncFunc(name);
 
-    const method: any = service;
+    const method: any = service[name];
     const { originalName }: { originalName?: string } = method;
     if (originalName) {
       prototype[originalName] = prototype[name];

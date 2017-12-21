@@ -179,4 +179,73 @@ describe("HTTP Test", () => {
       await server.stop();
     }
   });
+
+  it("should handle per retry timeout correctly", async () => {
+    const CLIENT_TRACE_ID = `client-id-${Math.floor(Math.random() * 65536)}`;
+    let innerCalledCount = 0;
+
+    const server = new class extends HttpTestServer {
+      constructor() {
+        super(9);
+      }
+
+      async wrapper(request: Request): Promise<any> {
+        const client = new EnvoyHttpClient(request.headers as HttpHeader);
+        const ctx = client.envoyContext;
+        expect(ctx.clientTraceId).toBe(CLIENT_TRACE_ID);
+
+        let errorHappened = false;
+
+        // send request to inner
+        try {
+          await client.post(
+            `http://${HttpTestServer.domainName}:${this.envoyIngressPort}/inner`,
+            request.body,
+            {
+              retryOn: [HttpRetryOn.RETRIABLE_4XX],
+              maxRetries: 3,
+              perTryTimeout: 100
+            }
+          );
+        } catch (e) {
+          errorHappened = true;
+          expect(e.$statusCode).toBe(504);
+          expect(e.message).toBe("upstream request timeout");
+        }
+
+        expect(errorHappened).toBeTruthy();
+        expect(innerCalledCount).toBe(2);
+
+        return;
+      }
+
+      async inner(request: Request): Promise<any> {
+        innerCalledCount++;
+        if (innerCalledCount === 2) {
+          await sleep(100);
+        }
+        if (innerCalledCount < 3) {
+          const err = new Error("HTTP 409");
+          Object.assign(err, { statusCode: 409 });
+          throw err;
+        }
+        return { message: "pong" };
+      }
+    }();
+
+    await server.start();
+
+    // wait for envoy to up
+    await sleep(100);
+
+    try {
+      await simplePost(
+        `http://${HttpTestServer.bindHost}:${server.envoyIngressPort}/wrapper`,
+        { message: "ping" },
+        { "x-client-trace-id": CLIENT_TRACE_ID }
+      );
+    } finally {
+      await server.stop();
+    }
+  });
 });
