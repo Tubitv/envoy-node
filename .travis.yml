@@ -12,6 +12,8 @@ notifications:
 node_js:
   - node
 script:
+  - export PATH=./node_modules/.bin/:$PATH
+  - npm run download-envoy
   - npm run test:prod && npm run build
 after_success:
   - npm run report-coverage
