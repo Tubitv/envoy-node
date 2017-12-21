@@ -89,7 +89,11 @@ export default class EnvoyGrpcRequestParams extends EnvoyRequestParams {
     const metadata = new grpc.Metadata();
 
     for (const [key, value] of Object.entries(this.context.assembleTracingHeader())) {
-      metadata.add(key, value);
+      if (Array.isArray(value)) {
+        value.forEach(v => metadata.add(key, v));
+      } else {
+        metadata.add(key, value);
+      }
     }
 
     if (this.maxRetries >= 0) {

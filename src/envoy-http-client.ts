@@ -66,6 +66,7 @@ export default class EnvoyHttpClient {
       method: "POST",
       headers: {
         "content-type": APPLICATION_JSON,
+        // tslint:disable-next-line:object-literal-key-quotes
         accept: APPLICATION_JSON
       },
       body: JSON.stringify(body)

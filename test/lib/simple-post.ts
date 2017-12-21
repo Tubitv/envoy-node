@@ -10,6 +10,7 @@ export default async function simplePost(
   const response = await fetch(url, {
     headers: {
       "content-type": APPLICATION_JSON,
+      // tslint:disable-next-line:object-literal-key-quotes
       accept: APPLICATION_JSON,
       ...header
     },
