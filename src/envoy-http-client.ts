@@ -27,7 +27,7 @@ export default class EnvoyHttpClient {
       return undefined;
     }
     const contentType = response.headers.get("content-type");
-    if (contentType !== "application/json" && !contentType.startsWith("text/")) {
+    if (!contentType || (contentType !== "application/json" && !contentType.startsWith("text/"))) {
       const err = new Error(`Unexpected content type: ${contentType}, http status: ${$statusCode}`);
       const body = await response.text();
       Object.assign(err, { $statusCode, body });
