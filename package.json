@@ -24,7 +24,7 @@
     "prebuild": "rimraf dist",
     "build": "tsc && typedoc --out dist/docs --target es6 --theme minimal src",
     "test": "jest --runInBand",
-    "test:watch": "jest --watch",
+    "test:watch": "jest --watch --runInBand",
     "test:prod": "npm run lint && npm run test -- --coverage --no-cache",
     "deploy-docs": "ts-node tools/gh-pages-publish",
     "report-coverage": "cat ./coverage/lcov.info | coveralls",
@@ -53,7 +53,7 @@
     "transform": {
       ".ts": "<rootDir>/node_modules/ts-jest/preprocessor.js"
     },
-    "testRegex": "test/\\w+\\.test\\.ts",
+    "testRegex": "test/[\\w-\\.]+\\.test\\.ts",
     "moduleFileExtensions": [
       "ts",
       "tsx",

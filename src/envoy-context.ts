@@ -5,9 +5,10 @@ import { isNumber } from "util";
 export const ENVOY_DEFAULT_EGRESS_PORT = 12345;
 export const ENVOY_DEFAULT_EGRESS_ADDR = "127.0.0.1";
 
-export const ENVOY_EGRESS_PORT =
-  parseInt(process.env.ENVOY_EGRESS_PORT || `${ENVOY_DEFAULT_EGRESS_PORT}`, 10) ||
-  ENVOY_DEFAULT_EGRESS_PORT;
+export const ENVOY_EGRESS_PORT = parseInt(
+  process.env.ENVOY_EGRESS_PORT || `${ENVOY_DEFAULT_EGRESS_PORT}`,
+  10
+);
 export const ENVOY_EGRESS_ADDR = process.env.ENVOY_EGRESS_ADDR || ENVOY_DEFAULT_EGRESS_ADDR;
 
 export const X_B3_TRACEID = "x-b3-traceid";
@@ -27,7 +28,7 @@ export const X_ENVOY_UPSTREAM_SERVICE_TIME = "x-envoy-upstream-service-time";
 export const X_TUBI_ENVOY_EGRESS_PORT = "x-tubi-envoy-egress-port";
 export const X_TUBI_ENVOY_EGRESS_ADDR = "x-tubi-envoy-egress-addr";
 
-function readMetaAsStringOrUndefined(meta: Metadata, key: string) {
+export function readMetaAsStringOrUndefined(meta: Metadata, key: string) {
   const value = meta.get(key);
   if (value.length > 0) {
     return value[0].toString();
@@ -35,7 +36,7 @@ function readMetaAsStringOrUndefined(meta: Metadata, key: string) {
   return undefined;
 }
 
-function readHeaderOrUndefined(header: HttpHeader, key: string) {
+export function readHeaderOrUndefined(header: HttpHeader, key: string) {
   const value = header[key];
   if (!value) {
     return undefined;
@@ -46,7 +47,11 @@ function readHeaderOrUndefined(header: HttpHeader, key: string) {
   return value;
 }
 
-function assignHeader(header: HttpHeader, key: string, value: string | number | undefined | null) {
+export function assignHeader(
+  header: HttpHeader,
+  key: string,
+  value: string | number | undefined | null
+) {
   if (value === undefined || value === null) return;
   if (isNumber(value)) {
     if (isNaN(value)) {
