@@ -131,4 +131,15 @@ describe("envoy http client status code test", () => {
     expect(notFoundHappended).toBeTruthy();
     expect(noException).toBeFalsy();
   });
+
+  it("should process text correctly", async () => {
+    statusCode = 200;
+    contentType = "text/plain";
+    body = "hello world!";
+
+    const client = new EnvoyHttpClient(new EnvoyContext({}, testPort));
+
+    const text = await client.get("http://foo/bar");
+    expect(text).toBe(body);
+  });
 });
