@@ -29,7 +29,7 @@ export default async function envoyFetch(
     throw new Error("Cannot read the URL for envoy to fetch");
   }
   if (protocol !== "http:") {
-    throw new Error("envoy fetch is designed only for http for now");
+    throw new Error(`envoy fetch is designed only for http for now, current found: ${protocol}`);
   }
   const refinedInit: RequestInit = { ...init };
 
