@@ -107,6 +107,7 @@
     "tslint-config-prettier": "^1.6.0",
     "tslint-config-standard": "^7.0.0",
     "typedoc": "^0.9.0",
+    "typedoc-plugin-internal-external": "^1.0.10",
     "typescript": "^2.6.2",
     "validate-commit-msg": "^2.14.0"
   },
