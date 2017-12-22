@@ -1,13 +1,15 @@
 import fetch from "node-fetch";
 import HttpTestServer, { Request } from "./lib/http-test-server";
 import { HttpHeader, RequestFunc } from "../src/types";
-import EnvoyContext from "../src/envoy-context";
-import envoyFetch from "../src/envoy-fetch";
-import EnvoyHttpRequestParams from "../src/envoy-http-request-params";
-import EnvoyHttpClient from "../src/envoy-http-client";
 import { sleep } from "./lib/utils";
 import simplePost from "./lib/simple-post";
-import { HttpRetryOn } from "../src/envoy-node-boilerplate";
+import {
+  EnvoyContext,
+  HttpRetryOn,
+  EnvoyHttpRequestParams,
+  EnvoyHttpClient,
+  envoyFetch
+} from "../src/envoy-node-boilerplate";
 
 describe("HTTP Test", () => {
   it("should propagate the tracing header correctly", async () => {

@@ -6,7 +6,7 @@ describe("envoy-fetch test", () => {
   it("should throw Error for invalid url", () => {
     expect.assertions(1);
     const param = new EnvoyHttpRequestParams(new EnvoyContext({}));
-    envoyFetch(param, "invliad url").catch((e: Error) => {
+    envoyFetch(param, "invalid url").catch((e: Error) => {
       expect(e.message).toBe("Cannot read the URL for envoy to fetch");
     });
   });

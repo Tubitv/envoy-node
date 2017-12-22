@@ -1,4 +1,4 @@
-import { httpHeader2Metadata } from "../src/envoy-node-boilerplate";
+import { httpHeader2Metadata } from "../src/envoy-grpc-request-params";
 
 describe("http header to metadata", () => {
   it("should convert header to metadata correctly", () => {

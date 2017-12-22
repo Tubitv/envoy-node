@@ -26,7 +26,7 @@ describe("Envoy context test", () => {
     expect(readHeaderOrUndefined(header, "not-ex-key")).toBe(undefined);
   });
 
-  it("shoulud assign header correctly", () => {
+  it("should assign header correctly", () => {
     const header: HttpHeader = {};
     assignHeader(header, "string", "value");
     assignHeader(header, "number", 1);
