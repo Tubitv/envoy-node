@@ -1,7 +1,7 @@
 # Envoy Node Boilerplate
 
 
-[![Travis](https://api.travis-ci.org/adRise/envoy-node-boilerplate.svg?branch=master)](https://travis-ci.org/adRise/envoy-node-boilerplate) [![Coverage Status](https://coveralls.io/repos/github/adRise/envoy-node-boilerplate/badge.svg?branch=master)](https://coveralls.io/github/adRise/envoy-node-boilerplate?branch=master)
+[![Travis](https://api.travis-ci.org/adRise/envoy-node-boilerplate.svg?branch=master)](https://travis-ci.org/adRise/envoy-node-boilerplate) [![Coverage Status](https://coveralls.io/repos/github/adRise/envoy-node-boilerplate/badge.svg?branch=master)](https://coveralls.io/github/adRise/envoy-node-boilerplate?branch=master) [![npm version](https://img.shields.io/npm/v/envoy-node-boilerplate.svg)](https://www.npmjs.com/package/envoy-node-boilerplate)  ![npm license](https://img.shields.io/npm/l/envoy-node-boilerplate.svg)
 
 This is a boilerplate to help you adopt [Envoy](https://github.com/envoyproxy/envoy).
 
