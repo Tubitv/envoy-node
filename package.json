@@ -1,6 +1,6 @@
 {
   "name": "envoy-node-boilerplate",
-  "version": "0.0.0",
+  "version": "0.0.0-development",
   "description": "",
   "keywords": [],
   "main": "dist/envoy-node-boilerplate.umd.js",
@@ -12,7 +12,7 @@
   "author": "Yingyu Cheng <yingyu@tubi.tv>",
   "repository": {
     "type": "git",
-    "url": "git@github.com:adRise/envoy-node-boilerplate.git"
+    "url": "https://github.com/adRise/envoy-node-boilerplate.git"
   },
   "license": "MIT",
   "engines": {
@@ -30,10 +30,12 @@
     "deploy-docs": "ts-node tools/gh-pages-publish",
     "report-coverage": "cat ./coverage/lcov.info | coveralls",
     "commit": "git-cz",
-    "semantic-release": "semantic-release pre && npm publish && semantic-release post",
+    "semantic-release": "semantic-release",
     "semantic-release-prepare": "ts-node tools/semantic-release-prepare",
     "precommit": "lint-staged",
-    "postinstall": "sed -i 's/Message<any>/Message/g' node_modules/grpc/index.d.ts"
+    "postinstall": "sed -i 's/Message<any>/Message/g' node_modules/grpc/index.d.ts",
+    "prepush": "npm run test:prod && npm run build",
+    "commitmsg": "validate-commit-msg"
   },
   "lint-staged": {
     "{src,test}/**/*.ts": [
@@ -76,40 +78,40 @@
     "mapCoverage": true
   },
   "devDependencies": {
-    "@types/protobufjs": "latest",
-    "@types/jest": "latest",
-    "@types/node": "latest",
-    "@types/node-fetch": "latest",
-    "colors": "latest",
-    "commitizen": "latest",
-    "coveralls": "latest",
-    "cross-env": "latest",
-    "cz-conventional-changelog": "latest",
-    "husky": "latest",
-    "jest": "latest",
-    "lint-staged": "latest",
-    "lodash.camelcase": "latest",
-    "prettier": "latest",
-    "prompt": "latest",
-    "replace-in-file": "latest",
-    "rimraf": "latest",
-    "semantic-release": "latest",
-    "rollup": "latest",
-    "rollup-plugin-commonjs": "latest",
-    "rollup-plugin-json": "latest",
-    "rollup-plugin-node-resolve": "latest",
-    "rollup-plugin-sourcemaps": "latest",
-    "ts-jest": "latest",
-    "ts-node": "latest",
-    "tslint": "latest",
-    "tslint-config-prettier": "latest",
-    "tslint-config-standard": "latest",
-    "typedoc": "latest",
-    "typescript": "latest",
-    "validate-commit-msg": "latest"
+    "@types/jest": "^21.1.9",
+    "@types/node": "^8.5.2",
+    "@types/node-fetch": "^1.6.7",
+    "@types/protobufjs": "^5.0.31",
+    "colors": "^1.1.2",
+    "commitizen": "^2.9.6",
+    "coveralls": "^3.0.0",
+    "cross-env": "^5.1.3",
+    "cz-conventional-changelog": "^2.1.0",
+    "husky": "^0.14.3",
+    "jest": "^22.0.3",
+    "lint-staged": "^6.0.0",
+    "lodash.camelcase": "^4.3.0",
+    "prettier": "^1.9.2",
+    "prompt": "^1.0.0",
+    "replace-in-file": "^3.1.0",
+    "rimraf": "^2.6.2",
+    "rollup": "^0.52.3",
+    "rollup-plugin-commonjs": "^8.2.6",
+    "rollup-plugin-json": "^2.3.0",
+    "rollup-plugin-node-resolve": "^3.0.0",
+    "rollup-plugin-sourcemaps": "^0.4.2",
+    "semantic-release": "^11.0.2",
+    "ts-jest": "^22.0.0",
+    "ts-node": "^4.0.2",
+    "tslint": "^5.8.0",
+    "tslint-config-prettier": "^1.6.0",
+    "tslint-config-standard": "^7.0.0",
+    "typedoc": "^0.9.0",
+    "typescript": "^2.6.2",
+    "validate-commit-msg": "^2.14.0"
   },
   "dependencies": {
-    "grpc": "latest",
-    "node-fetch": "latest"
+    "grpc": "^1.8.0",
+    "node-fetch": "^1.7.3"
   }
 }
