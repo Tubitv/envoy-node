@@ -6,7 +6,7 @@ import EnvoyRequestParams, {
 import { HttpHeader } from "./types";
 import EnvoyContext from "./envoy-context";
 
-export const X_ENVOY_RETRY_ON = "x-envoy-retry-on";
+const X_ENVOY_RETRY_ON = "x-envoy-retry-on";
 
 /**
  * Setting this header on egress requests will cause Envoy to attempt to retry failed

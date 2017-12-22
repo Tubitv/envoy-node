@@ -208,7 +208,7 @@ describe("GRPC Test", () => {
     }
   });
 
-  it("should handle mutilple retry timeout correctly", async () => {
+  it("should handle per retry timeout correctly", async () => {
     const CLIENT_TRACE_ID = `client-id-${Math.floor(Math.random() * 65536)}`;
     let innerCalledCount = 0;
 

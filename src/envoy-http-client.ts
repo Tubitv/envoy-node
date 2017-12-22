@@ -4,6 +4,10 @@ import EnvoyHttpRequestParams, { EnvoyHttpRequestInit } from "./envoy-http-reque
 import EnvoyContext from "./envoy-context";
 import envoyFetch, { EnvoyResponse } from "./envoy-fetch";
 
+/**
+ * json header
+ * @internal
+ */
 export const APPLICATION_JSON = "application/json";
 
 /**

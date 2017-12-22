@@ -2,30 +2,44 @@ import { HttpHeader } from "./types";
 import { Metadata } from "grpc";
 import { isNumber } from "util";
 
-export const ENVOY_DEFAULT_EGRESS_PORT = 12345;
-export const ENVOY_DEFAULT_EGRESS_ADDR = "127.0.0.1";
+const ENVOY_DEFAULT_EGRESS_PORT = 12345;
+const ENVOY_DEFAULT_EGRESS_ADDR = "127.0.0.1";
 
-export const ENVOY_EGRESS_PORT = parseInt(
+const ENVOY_EGRESS_PORT = parseInt(
   process.env.ENVOY_EGRESS_PORT || `${ENVOY_DEFAULT_EGRESS_PORT}`,
   10
 );
-export const ENVOY_EGRESS_ADDR = process.env.ENVOY_EGRESS_ADDR || ENVOY_DEFAULT_EGRESS_ADDR;
+const ENVOY_EGRESS_ADDR = process.env.ENVOY_EGRESS_ADDR || ENVOY_DEFAULT_EGRESS_ADDR;
 
-export const X_B3_TRACEID = "x-b3-traceid";
-export const X_B3_SPANID = "x-b3-spanid";
-export const X_B3_PARENTSPANID = "x-b3-parentspanid";
-export const X_B3_SAMPLED = "x-b3-sampled";
-export const X_B3_FLAGS = "x-b3-flags";
-export const X_OT_SPAN_CONTEXT = "x-ot-span-context";
-export const X_REQUEST_ID = "x-request-id";
-export const X_CLIENT_TRACE_ID = "x-client-trace-id";
+const X_B3_TRACEID = "x-b3-traceid";
+const X_B3_SPANID = "x-b3-spanid";
+const X_B3_PARENTSPANID = "x-b3-parentspanid";
+const X_B3_SAMPLED = "x-b3-sampled";
+const X_B3_FLAGS = "x-b3-flags";
+const X_OT_SPAN_CONTEXT = "x-ot-span-context";
+const X_REQUEST_ID = "x-request-id";
+const X_CLIENT_TRACE_ID = "x-client-trace-id";
 
-export const X_ENVOY_EXPECTED_RQ_TIMEOUT_MS = "x-envoy-expected-rq-timeout-ms";
+const X_ENVOY_EXPECTED_RQ_TIMEOUT_MS = "x-envoy-expected-rq-timeout-ms";
 
+/**
+ * the header returned by envoy telling upstream is overloaded
+ * @internal
+ */
 export const X_ENVOY_OVERLOADED = "x-envoy-overloaded";
+/**
+ * the header returned by envoy telling upstream duration
+ * @internal
+ */
 export const X_ENVOY_UPSTREAM_SERVICE_TIME = "x-envoy-upstream-service-time";
 
+/**
+ * the header set in envoy config for telling this library egress port
+ */
 export const X_TUBI_ENVOY_EGRESS_PORT = "x-tubi-envoy-egress-port";
+/**
+ * the header set in envoy config for telling this library egress address
+ */
 export const X_TUBI_ENVOY_EGRESS_ADDR = "x-tubi-envoy-egress-addr";
 
 /**

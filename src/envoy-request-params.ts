@@ -1,7 +1,19 @@
 import EnvoyContext from "./envoy-context";
 
+/**
+ * header of envoy max retries setting
+ * @internal
+ */
 export const X_ENVOY_MAX_RETRIES = "x-envoy-max-retries";
+/**
+ * header of envoy request timeout
+ * @internal
+ */
 export const X_ENVOY_UPSTREAM_RQ_TIMEOUT_MS = "x-envoy-upstream-rq-timeout-ms";
+/**
+ * header of envoy timeout per try
+ * @internal
+ */
 export const X_ENVOY_UPSTREAM_RQ_PER_TRY_TIMEOUT_MS = "x-envoy-upstream-rq-per-try-timeout-ms";
 
 /**

@@ -8,9 +8,7 @@ import EnvoyRequestParams, {
 import EnvoyContext from "./envoy-context";
 import { HttpHeader } from "./types";
 
-export const X_ENVOY_RETRY_GRPC_ON = "x-envoy-retry-grpc-on";
-export const HOST = "host";
-export const AUTHORITY = "authority";
+const X_ENVOY_RETRY_GRPC_ON = "x-envoy-retry-grpc-on";
 
 /**
  * Setting this header on egress requests will cause Envoy to attempt to retry
@@ -52,6 +50,7 @@ export interface EnvoyGrpcRequestInit {
 /**
  * convert http header to grpc.Metadata
  * @param httpHeader the http header
+ * @internal
  */
 export function httpHeader2Metadata(httpHeader: HttpHeader) {
   const metadata = new grpc.Metadata();

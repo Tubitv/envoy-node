@@ -14,6 +14,7 @@ import {
  * this function is to assign new method to the decorated original client
  * by assigning new method, user can call the method easier with async signature
  * @param name the function name
+ * @internal
  */
 function makeAsyncFunc(name: string): RequestFunc {
   return async function(this: EnvoyClient, request: any, options?: EnvoyGrpcRequestInit) {
@@ -42,6 +43,8 @@ function makeAsyncFunc(name: string): RequestFunc {
  * this method will decorate the client constructor to
  * 1. enable envoy context
  * 2. using async syntax for each call RPC
+ *
+ * Check `EnvoyClient` for more information
  *
  * TODO: optimize the typing if the typing of gRPC is updated
  * @param constructor Client constructor

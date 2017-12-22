@@ -9,6 +9,9 @@ export interface HttpHeader {
   [s: string]: string | string[];
 }
 
+/**
+ * original constructor of gRPC
+ */
 export interface ClientConstructor {
   new (address: string, credentials: ChannelCredentials, options?: object): Client;
 }
@@ -27,6 +30,9 @@ export interface EnvoyClientFuncEnabled {
   [methodName: string]: RequestFunc | any;
 }
 
+/**
+ * the envoy client for gRPC
+ */
 export interface EnvoyClient extends Client, EnvoyClientFuncEnabled {
   /**
    * the original target remote address (hostname:port)
@@ -38,6 +44,9 @@ export interface EnvoyClient extends Client, EnvoyClientFuncEnabled {
   readonly envoyContext: EnvoyContext;
 }
 
+/**
+ * the wrapped class generator of EnvoyClient
+ */
 export interface EnvoyClientConstructor {
   /**
    * create a new instance of Envoy client
