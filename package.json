@@ -12,7 +12,7 @@
   "author": "Yingyu Cheng <yingyu@tubi.tv>",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "git@github.com:adRise/envoy-node-boilerplate.git"
   },
   "license": "MIT",
   "engines": {
