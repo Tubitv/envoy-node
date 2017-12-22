@@ -5,6 +5,9 @@ import EnvoyContext, { X_ENVOY_OVERLOADED, X_ENVOY_UPSTREAM_SERVICE_TIME } from 
 import { HttpHeader } from "./types";
 import EnvoyHttpRequestParams from "./envoy-http-request-params";
 
+/**
+ * EnvoyResponse is a little enhanced from the original Response of node-fetch
+ */
 export interface EnvoyResponse extends Response {
   /**
    * Envoy will set this header on the downstream response if a request was dropped due
@@ -19,6 +22,13 @@ export interface EnvoyResponse extends Response {
   upstreamServiceTime: number;
 }
 
+/**
+ * the fetch function share most of the signature of the original node-fetch
+ * but helps you on setting up the request being send to envoy egress port
+ * @param envoyParams the params of envoy context as well as request control params (timeout / retry, etc)
+ * @param url the target url, the same as node-fetch's first param
+ * @param init the init, the same as node-fetch's second param
+ */
 export default async function envoyFetch(
   envoyParams: EnvoyHttpRequestParams,
   url: string,

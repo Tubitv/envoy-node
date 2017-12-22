@@ -10,6 +10,11 @@ import {
   HttpHeader
 } from "./types";
 
+/**
+ * this function is to assign new method to the decorated original client
+ * by assigning new method, user can call the method easier with async signature
+ * @param name the function name
+ */
 function makeAsyncFunc(name: string): RequestFunc {
   return async function(this: EnvoyClient, request: any, options?: EnvoyGrpcRequestInit) {
     const params = new EnvoyGrpcRequestParams(this.envoyContext, options);
@@ -36,7 +41,7 @@ function makeAsyncFunc(name: string): RequestFunc {
 /**
  * this method will decorate the client constructor to
  * 1. enable envoy context
- * 2. using async syntax
+ * 2. using async syntax for each call RPC
  *
  * TODO: optimize the typing if the typing of gRPC is updated
  * @param constructor Client constructor
@@ -46,7 +51,7 @@ export default function envoyProtoDecorator(
 ): EnvoyClientConstructor {
   const constructorAlias: any = constructor;
   const { service }: { service: ServiceDefinition } = constructorAlias;
-  const clazz = class extends constructor {
+  const clazz = class extends constructor implements EnvoyClient {
     readonly originalAddress: string;
     readonly envoyContext: EnvoyContext;
 

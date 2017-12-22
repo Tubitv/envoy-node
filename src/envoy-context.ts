@@ -28,6 +28,13 @@ export const X_ENVOY_UPSTREAM_SERVICE_TIME = "x-envoy-upstream-service-time";
 export const X_TUBI_ENVOY_EGRESS_PORT = "x-tubi-envoy-egress-port";
 export const X_TUBI_ENVOY_EGRESS_ADDR = "x-tubi-envoy-egress-addr";
 
+/**
+ * read value of the key from meata
+ * return undefined if not found or empty
+ * return first one if multiple values
+ * @param meta metadata
+ * @param key key
+ */
 export function readMetaAsStringOrUndefined(meta: Metadata, key: string) {
   const value = meta.get(key);
   if (value.length > 0) {
@@ -36,6 +43,13 @@ export function readMetaAsStringOrUndefined(meta: Metadata, key: string) {
   return undefined;
 }
 
+/**
+ * read value of the key from header
+ * return undefined if not found or empty
+ * return first one if multiple values
+ * @param header the header
+ * @param key the key
+ */
 export function readHeaderOrUndefined(header: HttpHeader, key: string) {
   const value = header[key];
   if (!value) {
@@ -47,6 +61,12 @@ export function readHeaderOrUndefined(header: HttpHeader, key: string) {
   return value;
 }
 
+/**
+ * assign key value to header, skip empty value
+ * @param header the http header
+ * @param key the key
+ * @param value the value
+ */
 export function assignHeader(
   header: HttpHeader,
   key: string,
@@ -63,6 +83,9 @@ export function assignHeader(
   }
 }
 
+/**
+ * EnvoyContext is where all information related to the current envoy environment.
+ */
 export default class EnvoyContext {
   /**
    * the binded address of envoy egress
@@ -158,6 +181,16 @@ export default class EnvoyContext {
    */
   readonly expectedRequestTimeout?: number;
 
+  /**
+   * initialize an EnvoyContext
+   * @param meta you can either give HTTP header for grpc.Metadata, it will be converted accordingly.
+   * @param envoyEgressPort optional egress port information
+   *  if not specified, it will be read from meta / environment variable ENVOY_EGRESS_PORT / default value: 12345
+   *  (one after another)
+   * @param envoyEgressAddr optional egress address information
+   *  if not specified, it will be read from meta / environment variable ENVOY_EGRESS_ADDR / default value: 127.0.0.1
+   *  (one after another)
+   */
   constructor(
     meta: HttpHeader | Metadata,
     envoyEgressPort: number | undefined = undefined,

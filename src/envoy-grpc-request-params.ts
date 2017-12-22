@@ -39,6 +39,9 @@ export enum GrpcRetryOn {
   RESOURCE_EXHAUSTED = "resource-exhausted"
 }
 
+/**
+ * request params: timeout, retry, etc.
+ */
 export interface EnvoyGrpcRequestInit {
   maxRetries?: number;
   retryOn?: GrpcRetryOn[];
@@ -46,6 +49,10 @@ export interface EnvoyGrpcRequestInit {
   perTryTimeout?: number;
 }
 
+/**
+ * convert http header to grpc.Metadata
+ * @param httpHeader the http header
+ */
 export function httpHeader2Metadata(httpHeader: HttpHeader) {
   const metadata = new grpc.Metadata();
   for (const [key, value] of Object.entries(httpHeader)) {
@@ -58,23 +65,16 @@ export function httpHeader2Metadata(httpHeader: HttpHeader) {
   return metadata;
 }
 
+/**
+ * the gRPC request params, mainly two parts:
+ * 1. EnvoyContext, telling what the situation is
+ * 2. request params, like timeout, retry, etc.
+ */
 export default class EnvoyGrpcRequestParams extends EnvoyRequestParams {
+  /**
+   * on what condition shall envoy retry
+   */
   readonly retryOn: GrpcRetryOn[];
-
-  /**
-   * Setting this header on egress requests will cause Envoy to override the route configuration.
-   * The timeout must be specified in millisecond units.
-   * Also see <perTryTimeout>
-   */
-  readonly timeout: number;
-
-  /**
-   * Setting this will cause Envoy to set a per try timeout on routed requests. This timeout must
-   * be <= the global route timeout (see <timeout>) or it is ignored.
-   * This allows a caller to set a tight per try timeout to allow for retries while maintaining a
-   * reasonable overall timeout.
-   */
-  readonly perTryTimeout: number;
 
   /**
    * Setting the retry policies, if empty param is given will not generate any headers but using
@@ -89,10 +89,8 @@ export default class EnvoyGrpcRequestParams extends EnvoyRequestParams {
       perTryTimeout: -1,
       ...params
     };
-    super(context, maxRetries);
+    super(context, maxRetries, timeout, perTryTimeout);
     this.retryOn = retryOn;
-    this.timeout = timeout;
-    this.perTryTimeout = perTryTimeout;
   }
 
   /**

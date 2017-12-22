@@ -4,6 +4,9 @@ export const X_ENVOY_MAX_RETRIES = "x-envoy-max-retries";
 export const X_ENVOY_UPSTREAM_RQ_TIMEOUT_MS = "x-envoy-upstream-rq-timeout-ms";
 export const X_ENVOY_UPSTREAM_RQ_PER_TRY_TIMEOUT_MS = "x-envoy-upstream-rq-per-try-timeout-ms";
 
+/**
+ * the Common signature of EnvoyRequestParams
+ */
 export default abstract class EnvoyRequestParams {
   /**
    * request context read from ingress traffic
@@ -34,8 +37,24 @@ export default abstract class EnvoyRequestParams {
    */
   readonly maxRetries: number;
 
-  constructor(context: EnvoyContext, maxRetries: number) {
+  /**
+   * Setting this header on egress requests will cause Envoy to override the route configuration.
+   * The timeout must be specified in millisecond units.
+   * Also see <perTryTimeout>
+   */
+  readonly timeout: number;
+
+  /**
+   * Setting this will cause Envoy to set a per try timeout on routed requests. This timeout must
+   * be <= the global route timeout (see <timeout>) or it is ignored.
+   * This allows a caller to set a tight per try timeout to allow for retries while maintaining a
+   * reasonable overall timeout.
+   */
+  readonly perTryTimeout: number;
+  constructor(context: EnvoyContext, maxRetries: number, timeout: number, perTryTimeout: number) {
     this.context = context;
     this.maxRetries = maxRetries;
+    this.timeout = timeout;
+    this.perTryTimeout = perTryTimeout;
   }
 }
