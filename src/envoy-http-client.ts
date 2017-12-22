@@ -2,8 +2,7 @@ import { Metadata } from "grpc";
 import { HttpHeader } from "./types";
 import EnvoyHttpRequestParams, { EnvoyHttpRequestInit } from "./envoy-http-request-params";
 import EnvoyContext from "./envoy-context";
-import envoyFetch from "./envoy-fetch";
-import { EnvoyResponse } from "./envoy-node-boilerplate";
+import envoyFetch, { EnvoyResponse } from "./envoy-fetch";
 
 export const APPLICATION_JSON = "application/json";
 
