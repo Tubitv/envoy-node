@@ -1,5 +1,5 @@
 {
-  "name": "envoy-node-boilerplate",
+  "name": "node-envoy",
   "version": "1.5.0-development",
   "description": "",
   "keywords": [],
@@ -12,7 +12,7 @@
   "author": "Yingyu Cheng <yingyu@tubi.tv>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/adRise/envoy-node-boilerplate.git"
+    "url": "https://github.com/Tubitv/node-envoy.git"
   },
   "license": "MIT",
   "engines": {
