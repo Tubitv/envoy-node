@@ -1,4 +1,4 @@
-# Envoy Node Boilerplate
+# Envoy Node
 
 
 [![Travis](https://api.travis-ci.org/Tubitv/envoy-node.svg?branch=master)](https://travis-ci.org/Tubitv/envoy-node) [![Coverage Status](https://coveralls.io/repos/github/Tubitv/envoy-node/badge.svg?branch=master)](https://coveralls.io/github/Tubitv/envoy-node?branch=master) [![npm version](https://img.shields.io/npm/v/envoy-node.svg)](https://www.npmjs.com/package/envoy-node)  ![npm license](https://img.shields.io/npm/l/envoy-node.svg)
