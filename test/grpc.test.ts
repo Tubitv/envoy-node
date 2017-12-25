@@ -3,7 +3,7 @@ import grpc, { ServerUnaryCall, sendUnaryData, ServiceError } from "grpc";
 import GrpcTestServer, { Ping, PingEnvoyClient } from "./lib/grpc-test-server";
 import { sleep } from "./lib/utils";
 import { RequestFunc, EnvoyClient } from "../src/types";
-import { GrpcRetryOn, EnvoyContext } from "../src/envoy-node-boilerplate";
+import { GrpcRetryOn, EnvoyContext } from "../src/envoy-node";
 
 interface PingEnvoyClient extends EnvoyClient {
   inner: RequestFunc;

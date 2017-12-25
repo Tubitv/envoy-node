@@ -1,7 +1,7 @@
 # Envoy Node Boilerplate
 
 
-[![Travis](https://api.travis-ci.org/adRise/envoy-node-boilerplate.svg?branch=master)](https://travis-ci.org/adRise/envoy-node-boilerplate) [![Coverage Status](https://coveralls.io/repos/github/adRise/envoy-node-boilerplate/badge.svg?branch=master)](https://coveralls.io/github/adRise/envoy-node-boilerplate?branch=master) [![npm version](https://img.shields.io/npm/v/envoy-node-boilerplate.svg)](https://www.npmjs.com/package/envoy-node-boilerplate)  ![npm license](https://img.shields.io/npm/l/envoy-node-boilerplate.svg)
+[![Travis](https://api.travis-ci.org/Tubitv/envoy-node.svg?branch=master)](https://travis-ci.org/Tubitv/envoy-node) [![Coverage Status](https://coveralls.io/repos/github/Tubitv/envoy-node/badge.svg?branch=master)](https://coveralls.io/github/Tubitv/envoy-node?branch=master) [![npm version](https://img.shields.io/npm/v/envoy-node.svg)](https://www.npmjs.com/package/envoy-node)  ![npm license](https://img.shields.io/npm/l/envoy-node.svg)
 
 This is a boilerplate to help you adopt [Envoy](https://github.com/envoyproxy/envoy).
 
@@ -67,7 +67,7 @@ You can also set this by the constructor parameters of `EnvoyContext`.
 For HTTP, you can new the client like this:
 
 ```js
-const { EnvoyHttpClient, HttpRetryOn } = require("envoy-node-boilerplate");
+const { EnvoyHttpClient, HttpRetryOn } = require("envoy-node");
 
 async function awesomeAPI(req, res) {
   const client = new EnvoyHttpClient(req.headers);
@@ -95,7 +95,7 @@ For gRPC, you can new the client like this:
 
 ```js
 const grpc = require("grpc");
-const { envoyProtoDecorator, GrpcRetryOn } = require("envoy-node-boilerplate");
+const { envoyProtoDecorator, GrpcRetryOn } = require("envoy-node");
 
 const PROTO_PATH = __dirname + "/ping.proto";
 const Ping = grpc.load(PROTO_PATH).test.Ping;
@@ -128,7 +128,7 @@ async function awesomeAPI(call, callback) {
 If you want to have more control of your code, you can also use the low level APIs of this library:
 
 ```js
-const { envoyFetch, EnvoyContext, EnvoyHttpRequestParams, EnvoyGrpcRequestParams } = require("envoy-node-boilerplate");
+const { envoyFetch, EnvoyContext, EnvoyHttpRequestParams, EnvoyGrpcRequestParams } = require("envoy-node");
 
 // ...
 

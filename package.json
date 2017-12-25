@@ -1,18 +1,18 @@
 {
-  "name": "node-envoy",
+  "name": "envoy-node",
   "version": "1.5.0-development",
   "description": "",
   "keywords": [],
-  "main": "dist/envoy-node-boilerplate.umd.js",
-  "module": "dist/envoy-node-boilerplate.es5.js",
-  "typings": "dist/types/envoy-node-boilerplate.d.ts",
+  "main": "dist/envoy-node.umd.js",
+  "module": "dist/envoy-node.es5.js",
+  "typings": "dist/types/envoy-node.d.ts",
   "files": [
     "dist"
   ],
   "author": "Yingyu Cheng <yingyu@tubi.tv>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Tubitv/node-envoy.git"
+    "url": "https://github.com/Tubitv/envoy-node.git"
   },
   "license": "MIT",
   "engines": {

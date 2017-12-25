@@ -9,7 +9,7 @@ import {
   EnvoyHttpRequestParams,
   EnvoyHttpClient,
   envoyFetch
-} from "../src/envoy-node-boilerplate";
+} from "../src/envoy-node";
 
 describe("HTTP Test", () => {
   it("should propagate the tracing header correctly", async () => {
