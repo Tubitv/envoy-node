@@ -1,4 +1,4 @@
-import grpc, { ServerUnaryCall, sendUnaryData, ServiceError, ServerWriteableStream } from "grpc";
+import grpc, { ServerUnaryCall, sendUnaryData, ServiceError, ServerDuplexStream } from "grpc";
 
 import GrpcTestServer, { Ping, PingEnvoyClient } from "./lib/grpc-test-server";
 import { sleep } from "./lib/utils";
@@ -6,7 +6,7 @@ import { RequestFunc, EnvoyClient } from "../src/types";
 import { GrpcRetryOn, EnvoyContext } from "../src/envoy-node";
 import { setTimeout } from "timers";
 
-describe("GRPC server stream Test", () => {
+describe("GRPC bidi stream Test", () => {
   it("should propagate the tracing header correctly", async () => {
     const CLIENT_TRACE_ID = `client-id-${Math.floor(Math.random() * 65536)}`;
     let requestId: string | undefined;
@@ -29,7 +29,8 @@ describe("GRPC server stream Test", () => {
         traceId = ctx.traceId;
         innerParentId = ctx.spanId;
         await new Promise((resolve, reject) => {
-          const stream = innerClient.serverStream({ message: call.request.message });
+          const stream = innerClient.bidiStream();
+          stream.write({ message: call.request.message });
           stream.on("error", error => {
             reject(error);
           });
@@ -43,19 +44,25 @@ describe("GRPC server stream Test", () => {
           stream.on("end", () => {
             resolve();
           });
+          stream.end();
         });
         return { message: "pong" };
       }
 
-      serverStream(call: ServerWriteableStream): void {
-        const ctx = new EnvoyContext(call.metadata);
+      bidiStream(call: ServerDuplexStream): void {
+        const { metadata }: { metadata: grpc.Metadata } = call as any; // TODO gRPC library' typing is incorrect
+        const ctx = new EnvoyContext(metadata);
         expect(ctx.clientTraceId).toBe(CLIENT_TRACE_ID);
         expect(ctx.requestId).toBe(requestId);
         expect(ctx.traceId).toBe(traceId);
         expect(ctx.parentSpanId).toBe(innerParentId);
-        expect(call.request.message).toBe("ping");
         call.write({ message: "pong" });
-        call.end();
+        call.on("data", (data: any) => {
+          expect(data.message).toBe("ping");
+        });
+        call.on("end", () => {
+          call.end();
+        });
       }
     }();
 

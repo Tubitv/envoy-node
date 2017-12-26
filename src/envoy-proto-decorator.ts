@@ -164,6 +164,7 @@ export default function envoyProtoDecorator(
 
     const { originalName }: { originalName?: string } = method;
     if (originalName) {
+      // should alway have
       prototype[originalName] = prototype[name];
     }
   }
