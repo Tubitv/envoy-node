@@ -234,7 +234,7 @@ client.pathToRpc(
 
 ```
 
-Check out the detail document if needed.
+Check out the [detail document](https://tubitv.github.io/envoy-node/) if needed.
 
 ## License
 
