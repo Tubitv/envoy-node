@@ -26,7 +26,7 @@ describe("GRPC Test", () => {
         const innerClient = new PingEnvoyClient(
           `${GrpcTestServer.domainName}:${this.envoyIngressPort}`,
           new EnvoyContext(call.metadata)
-        ) as PingEnvoyClient;
+        );
         const ctx = innerClient.envoyContext;
         expect(ctx.clientTraceId).toBe(CLIENT_TRACE_ID);
         requestId = ctx.requestId;
@@ -85,23 +85,23 @@ describe("GRPC Test", () => {
         const innerClient = new PingEnvoyClient(
           `${GrpcTestServer.domainName}:${this.envoyIngressPort}`,
           call.metadata
-        ) as PingEnvoyClient;
+        );
 
         const startTime = Date.now();
 
+        let noException = false;
+
         try {
-          const firstResponse = await innerClient.inner(
-            { message: call.request.message },
-            { timeout: 10 }
-          );
-          // TODO maybe will arrive here? or should not?
+          await innerClient.inner({ message: call.request.message }, { timeout: 10 });
+          noException = true;
         } catch (e) {
-          // TODO check the error
+          expect(e.message).toBe("Received http2 header with status: 504");
         }
+
+        expect(noException).toBeFalsy();
 
         const endTime = Date.now();
 
-        // TODO it looks like this is a bug of envoy, which is not working now
         expect(endTime - startTime).toBeLessThan(WRAPPER_SLEEP_TIME);
 
         return { message: "" };
@@ -156,7 +156,7 @@ describe("GRPC Test", () => {
         const innerClient = new PingEnvoyClient(
           `${GrpcTestServer.domainName}:${this.envoyIngressPort}`,
           call.metadata
-        ) as PingEnvoyClient;
+        );
 
         return innerClient.inner(
           { message: call.request.message },
@@ -214,7 +214,7 @@ describe("GRPC Test", () => {
 
     const server = new class extends GrpcTestServer {
       constructor() {
-        super(9);
+        super(3);
       }
 
       async wrapper(call: ServerUnaryCall): Promise<any> {

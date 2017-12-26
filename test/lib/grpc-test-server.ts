@@ -8,13 +8,29 @@ import grpc, {
 } from "grpc";
 import CommonTestServer from "./common-test-server";
 import envoyProtoDecorator from "../../src/envoy-proto-decorator";
-import { EnvoyClientConstructor } from "../../src/types";
+import {
+  EnvoyClientConstructor,
+  RequestFunc,
+  EnvoyClient,
+  ClientStreamFunc,
+  ServerStreamFunc,
+  BidiStreamFunc
+} from "../../src/types";
 
 const PROTO_PATH = __dirname + "/ping.proto";
 const testProto: any = grpc.load(PROTO_PATH).test;
+
+export interface PingEnvoyClient extends EnvoyClient {
+  inner: RequestFunc;
+  wrapper: RequestFunc;
+  clientStream: ClientStreamFunc;
+  serverStream: ServerStreamFunc;
+  bidiStream: BidiStreamFunc;
+}
+
 export const { Ping } = testProto;
 // tslint:disable-next-line:variable-name
-export const PingEnvoyClient: EnvoyClientConstructor = envoyProtoDecorator(Ping);
+export const PingEnvoyClient: EnvoyClientConstructor<PingEnvoyClient> = envoyProtoDecorator(Ping);
 
 function wrapImpl(func: (call: ServerUnaryCall) => Promise<any>) {
   return (call: ServerUnaryCall, callback: sendUnaryData) => {

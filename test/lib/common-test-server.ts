@@ -62,8 +62,8 @@ export default abstract class CommonTestServer {
   async stop() {
     this.envoy.kill();
     this.zipkin.stop();
-    // await unlink(this.envoyConfigFileName);
-    // await unlink(`/tmp/envoy-test-${this.servicePort}.ingress.log`);
-    // await unlink(`/tmp/envoy-test-${this.servicePort}.egress.log`);
+    await unlink(this.envoyConfigFileName);
+    await unlink(`/tmp/envoy-test-${this.servicePort}.ingress.log`);
+    await unlink(`/tmp/envoy-test-${this.servicePort}.egress.log`);
   }
 }

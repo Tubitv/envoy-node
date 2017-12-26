@@ -1,4 +1,12 @@
-import { ChannelCredentials, Client, Metadata } from "grpc";
+import {
+  ChannelCredentials,
+  Client,
+  Metadata,
+  requestCallback,
+  ClientWritableStream,
+  ClientReadableStream,
+  ClientDuplexStream
+} from "grpc";
 import EnvoyContext from "./envoy-context";
 import { EnvoyGrpcRequestInit } from "./envoy-grpc-request-params";
 
@@ -23,11 +31,23 @@ export interface ClientConstructor {
  */
 export type RequestFunc = (request: any, options?: EnvoyGrpcRequestInit) => Promise<any>;
 
+export type ClientStreamFunc = (
+  callback: requestCallback,
+  options?: EnvoyGrpcRequestInit
+) => ClientWritableStream;
+
+export type ServerStreamFunc = (
+  request: any,
+  options?: EnvoyGrpcRequestInit
+) => ClientReadableStream;
+
+export type BidiStreamFunc = (options?: EnvoyGrpcRequestInit) => ClientDuplexStream;
+
 export interface EnvoyClientFuncEnabled {
   /**
    * the API signature, dynamic attached for each gRPC request
    */
-  [methodName: string]: RequestFunc | any;
+  [methodName: string]: RequestFunc | ClientStreamFunc | ServerStreamFunc | BidiStreamFunc | any;
 }
 
 /**
@@ -47,12 +67,12 @@ export interface EnvoyClient extends Client, EnvoyClientFuncEnabled {
 /**
  * the wrapped class generator of EnvoyClient
  */
-export interface EnvoyClientConstructor {
+export interface EnvoyClientConstructor<T extends EnvoyClient> {
   /**
    * create a new instance of Envoy client
    * @param address the address of remote target server
    * @param ctx the context, you can either tell me EnvoyContext, grpc.Metadata, or HttpHeader.
    *  for the last two option, I will create EnvoyContext base of them.
    */
-  new (address: string, ctx: EnvoyContext | Metadata | HttpHeader): EnvoyClient;
+  new (address: string, ctx: EnvoyContext | Metadata | HttpHeader): T;
 }

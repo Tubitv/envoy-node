@@ -20,7 +20,7 @@ describe("HTTP Test", () => {
 
     const server = new class extends HttpTestServer {
       constructor() {
-        super(3);
+        super(10);
       }
 
       async wrapper(request: Request): Promise<any> {
@@ -73,7 +73,7 @@ describe("HTTP Test", () => {
 
     const server = new class extends HttpTestServer {
       constructor() {
-        super(4);
+        super(11);
       }
 
       async wrapper(request: Request): Promise<any> {
@@ -134,7 +134,7 @@ describe("HTTP Test", () => {
 
     const server = new class extends HttpTestServer {
       constructor() {
-        super(9);
+        super(12);
       }
 
       async wrapper(request: Request): Promise<any> {
@@ -188,7 +188,7 @@ describe("HTTP Test", () => {
 
     const server = new class extends HttpTestServer {
       constructor() {
-        super(9);
+        super(13);
       }
 
       async wrapper(request: Request): Promise<any> {
