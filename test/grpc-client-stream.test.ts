@@ -15,7 +15,7 @@ describe("GRPC client stream Test", () => {
 
     const server = new class extends GrpcTestServer {
       constructor() {
-        super(20);
+        super(40);
       }
 
       async wrapper(call: ServerUnaryCall): Promise<any> {
@@ -94,7 +94,7 @@ describe("GRPC client stream Test", () => {
 
     const server = new class extends GrpcTestServer {
       constructor() {
-        super(22);
+        super(41);
       }
 
       async wrapper(call: ServerUnaryCall): Promise<any> {

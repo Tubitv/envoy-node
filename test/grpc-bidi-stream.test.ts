@@ -15,7 +15,7 @@ describe("GRPC bidi stream Test", () => {
 
     const server = new class extends GrpcTestServer {
       constructor() {
-        super(20);
+        super(30);
       }
 
       async wrapper(call: ServerUnaryCall): Promise<any> {
