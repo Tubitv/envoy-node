@@ -1,4 +1,13 @@
-import { credentials, ServiceDefinition, Metadata, ServiceError } from "grpc";
+import {
+  credentials,
+  ServiceDefinition,
+  Metadata,
+  ServiceError,
+  requestCallback,
+  ClientWritableStream,
+  ClientReadableStream,
+  ClientDuplexStream
+} from "grpc";
 import EnvoyContext from "./envoy-context";
 import EnvoyGrpcRequestParams, { EnvoyGrpcRequestInit } from "./envoy-grpc-request-params";
 import {
@@ -40,6 +49,67 @@ function makeAsyncFunc(name: string): RequestFunc {
 }
 
 /**
+ * this is to wrap the original client stream func, to insert envoy metadata
+ * @param name the name of the func
+ */
+function wrapClientStreamFunc(name: string) {
+  return function(
+    this: EnvoyClient,
+    callback: requestCallback,
+    options?: EnvoyGrpcRequestInit
+  ): ClientWritableStream {
+    const params = new EnvoyGrpcRequestParams(this.envoyContext, options);
+    return Object.getPrototypeOf(Object.getPrototypeOf(this))[name].call(
+      this,
+      params.assembleRequestMeta(),
+      {
+        host: this.originalAddress
+      },
+      callback
+    );
+  };
+}
+
+/**
+ * this is to wrap the original server stream func, to insert envoy metadata
+ * @param name the name of the func
+ */
+function wrapServerStream(name: string) {
+  return function(
+    this: EnvoyClient,
+    request: any,
+    options?: EnvoyGrpcRequestInit
+  ): ClientReadableStream {
+    const params = new EnvoyGrpcRequestParams(this.envoyContext, options);
+    return Object.getPrototypeOf(Object.getPrototypeOf(this))[name].call(
+      this,
+      request,
+      params.assembleRequestMeta(),
+      {
+        host: this.originalAddress
+      }
+    );
+  };
+}
+
+/**
+ * this is to wrap the original bidirectional stream, to insert envoy metadata
+ * @param name the func name
+ */
+function wrapBidiStream(name: string) {
+  return function(this: EnvoyClient, options?: EnvoyGrpcRequestInit): ClientDuplexStream {
+    const params = new EnvoyGrpcRequestParams(this.envoyContext, options);
+    return Object.getPrototypeOf(Object.getPrototypeOf(this))[name].call(
+      this,
+      params.assembleRequestMeta(),
+      {
+        host: this.originalAddress
+      }
+    );
+  };
+}
+
+/**
  * this method will decorate the client constructor to
  * 1. enable envoy context
  * 2. using async syntax for each call RPC
@@ -77,10 +147,21 @@ export default function envoyProtoDecorator(
   const prototype = clazz.prototype as EnvoyClientFuncEnabled;
 
   for (const name of Object.keys(service)) {
-    // tslint:disable-next-line:only-arrow-functions
-    prototype[name] = makeAsyncFunc(name);
-
     const method: any = service[name];
+
+    const { requestStream, responseStream } = method;
+
+    if (!requestStream && !responseStream) {
+      // tslint:disable-next-line:only-arrow-functions
+      prototype[name] = makeAsyncFunc(name);
+    } else if (method.requestStream && !method.responseStream) {
+      prototype[name] = wrapClientStreamFunc(name);
+    } else if (!method.requestStream && method.responseStream) {
+      prototype[name] = wrapServerStream(name);
+    } else {
+      prototype[name] = wrapBidiStream(name);
+    }
+
     const { originalName }: { originalName?: string } = method;
     if (originalName) {
       prototype[originalName] = prototype[name];
