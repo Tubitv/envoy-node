@@ -14,5 +14,5 @@ script:
   - npm run test:prod && npm run build
 after_success:
   - npm run report-coverage
-  - npm run deploy-docs
+  - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then npm run deploy-docs; fi'
   - npm run semantic-release
