@@ -7,11 +7,12 @@ option objc_class_prefix = "TS";
 
 package test;
 
-// The greeting service definition.
 service Ping {
-  // Sends a greeting
-  rpc Wrapper (Request) returns (Response) {}
-  rpc Inner (Request) returns (Response) {}
+  rpc Wrapper (Request) returns (Response);
+  rpc Inner (Request) returns (Response);
+  rpc ClientStream(stream Request) returns (Response);
+  rpc ServerStream(Request) returns (stream Response);
+  rpc BidiStream(stream Request) returns (stream Response);
 }
 
 message Request {

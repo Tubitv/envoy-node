@@ -1,4 +1,11 @@
-import grpc, { ServerUnaryCall, sendUnaryData, ServiceError } from "grpc";
+import grpc, {
+  ServerUnaryCall,
+  sendUnaryData,
+  ServiceError,
+  ServerReadableStream,
+  ServerWriteableStream,
+  ServerDuplexStream
+} from "grpc";
 import CommonTestServer from "./common-test-server";
 import envoyProtoDecorator from "../../src/envoy-proto-decorator";
 import { EnvoyClientConstructor } from "../../src/types";
@@ -30,7 +37,10 @@ export default abstract class GrpcTestServer extends CommonTestServer {
     this.server = new grpc.Server();
     this.server.addService(Ping.service, {
       wrapper: wrapImpl(this.wrapper.bind(this)),
-      inner: wrapImpl(this.inner.bind(this))
+      inner: wrapImpl(this.inner.bind(this)),
+      clientStream: this.clientStream.bind(this),
+      serverStream: this.serverStream.bind(this),
+      bidiStream: this.bidiStream.bind(this)
     });
     this.server.bind(
       `${GrpcTestServer.bindHost}:${this.servicePort}`,
@@ -38,9 +48,46 @@ export default abstract class GrpcTestServer extends CommonTestServer {
     );
   }
 
-  abstract async wrapper(call: ServerUnaryCall): Promise<any>;
+  async wrapper(call: ServerUnaryCall): Promise<any> {
+    console.log("client requested:", call.request);
+    return { message: "pong" };
+  }
 
-  abstract async inner(call: ServerUnaryCall): Promise<any>;
+  async inner(call: ServerUnaryCall): Promise<any> {
+    console.log("client requested:", call.request);
+    return { message: "pong" };
+  }
+
+  clientStream(call: ServerReadableStream, callback: sendUnaryData): void {
+    call.on("data", data => {
+      console.log("got data from client:", data);
+    });
+    call.on("error", err => {
+      callback(err, undefined);
+    });
+    call.on("end", () => {
+      callback(undefined, { message: "default client stream implementation." });
+    });
+  }
+
+  serverStream(call: ServerWriteableStream): void {
+    console.log("client requested:", call.request);
+    call.write({ message: "server send a message" });
+    call.on("end", () => {
+      call.end();
+    });
+  }
+
+  bidiStream(call: ServerDuplexStream): void {
+    console.log("should have metadata?", call);
+    call.write({ message: "server send a message" });
+    call.on("data", data => {
+      //
+    });
+    call.on("end", () => {
+      call.end();
+    });
+  }
 
   async start() {
     this.server.start();
