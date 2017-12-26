@@ -64,6 +64,8 @@ You can also set this by the constructor parameters of `EnvoyContext`.
 
 ## High level APIs
 
+### HTTP
+
 For HTTP, you can new the client like this:
 
 ```js
@@ -91,7 +93,11 @@ async function awesomeAPI(req, res) {
 }
 ```
 
+### gRPC
+
 For gRPC, you can new the client like this:
+
+#### General RPC
 
 ```js
 const grpc = require("grpc");
@@ -121,6 +127,54 @@ async function awesomeAPI(call, callback) {
   const response = await client.pathToRpc(request, optionalParams);
   callback(undefined, { remoteResponse: response });
 }
+```
+
+#### Client streaming
+
+```js
+const stream = innerClient.clientStream((err, response) => {
+  if (err) {
+    // error handling
+    return;
+  }
+  console.log("server responses:", response);
+});
+stream.write({ message: "ping" });
+stream.write({ message: "ping again" });
+stream.end();
+```
+
+#### Sever streaming
+
+```js
+const stream = innerClient.serverStream({ message: "ping" });
+stream.on("error", error => {
+  // handle error here
+});
+stream.on("data", (data: any) => {
+  console.log("server sent:", data);
+});
+stream.on("end", () => {
+  // ended
+});
+```
+
+#### Bidirectional streaming
+
+```js
+const stream = innerClient.bidiStream();
+stream.write({ message: "ping" });
+stream.write({ message: "ping again" });
+stream.on("error", error => {
+  // handle error here
+});
+stream.on("data", (data: any) => {
+  console.log("sever sent:", data);
+});
+stream.on("end", () => {
+  stream.end();
+});
+stream.end();
 ```
 
 ## Low level APIs
