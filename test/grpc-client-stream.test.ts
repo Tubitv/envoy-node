@@ -125,6 +125,9 @@ describe("GRPC client stream Test", () => {
       }
 
       clientStream(call: ServerReadableStream, callback: sendUnaryData): void {
+        call.on("data", (data: any) => {
+          expect(data.message).toBe("ping");
+        });
         innerCalledCount++;
         if (innerCalledCount < 2) {
           const error = new Error("DEADLINE_EXCEEDED") as ServiceError;
@@ -133,7 +136,12 @@ describe("GRPC client stream Test", () => {
           callback(error, undefined);
           return;
         }
-        callback(undefined, { message: "clientStream:pong" });
+        call.on("error", err => {
+          callback(err, undefined);
+        });
+        call.on("end", () => {
+          callback(undefined, { message: "clientStream:pong" });
+        });
       }
     }();
 

@@ -185,6 +185,7 @@ describe("HTTP Test", () => {
   it("should handle per retry timeout correctly", async () => {
     const CLIENT_TRACE_ID = `client-id-${Math.floor(Math.random() * 65536)}`;
     let innerCalledCount = 0;
+    const WRAPPER_SLEEP_TIME = 100;
 
     const server = new class extends HttpTestServer {
       constructor() {
@@ -206,7 +207,7 @@ describe("HTTP Test", () => {
             {
               retryOn: [HttpRetryOn.RETRIABLE_4XX],
               maxRetries: 3,
-              perTryTimeout: 100
+              perTryTimeout: WRAPPER_SLEEP_TIME
             }
           );
         } catch (e) {
@@ -224,7 +225,7 @@ describe("HTTP Test", () => {
       async inner(request: Request): Promise<any> {
         innerCalledCount++;
         if (innerCalledCount === 2) {
-          await sleep(100);
+          await sleep(WRAPPER_SLEEP_TIME * 1.2);
         }
         if (innerCalledCount < 3) {
           const err = new Error("HTTP 409");
