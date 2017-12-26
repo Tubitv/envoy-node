@@ -119,9 +119,9 @@ function wrapBidiStream(name: string) {
  * TODO: optimize the typing if the typing of gRPC is updated
  * @param constructor Client constructor
  */
-export default function envoyProtoDecorator(
+export default function envoyProtoDecorator<T extends EnvoyClient>(
   constructor: ClientConstructor
-): EnvoyClientConstructor {
+): EnvoyClientConstructor<T> {
   const constructorAlias: any = constructor;
   const { service }: { service: ServiceDefinition } = constructorAlias;
   const clazz = class extends constructor implements EnvoyClient {
@@ -142,7 +142,7 @@ export default function envoyProtoDecorator(
       this.originalAddress = address;
       this.envoyContext = envoyContext;
     }
-  };
+  } as EnvoyClientConstructor<T>;
 
   const prototype = clazz.prototype as EnvoyClientFuncEnabled;
 

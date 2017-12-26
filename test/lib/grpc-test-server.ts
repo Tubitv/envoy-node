@@ -30,7 +30,7 @@ export interface PingEnvoyClient extends EnvoyClient {
 
 export const { Ping } = testProto;
 // tslint:disable-next-line:variable-name
-export const PingEnvoyClient: EnvoyClientConstructor<PingEnvoyClient> = envoyProtoDecorator(Ping);
+export const PingEnvoyClient = envoyProtoDecorator<PingEnvoyClient>(Ping);
 
 function wrapImpl(func: (call: ServerUnaryCall) => Promise<any>) {
   return (call: ServerUnaryCall, callback: sendUnaryData) => {
