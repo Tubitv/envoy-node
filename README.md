@@ -129,7 +129,16 @@ async function awesomeAPI(call, callback) {
 }
 ```
 
-#### Client streaming
+#### Streaming API
+
+But they are also decorated to send the Envoy context. You can also specify the optional params (the last one) for features like `timeout` / `retryOn` / `maxRetries` / `perTryTimeout` provided by Envoy.
+
+**NOTE**:
+
+1. For streaming API, they are not implemented as `async` signature.
+2. The optional params (`timeout` etc.) is not tested and Envoy is not documented how it deal with streaming.
+
+##### Client streaming
 
 ```js
 const stream = innerClient.clientStream((err, response) => {
@@ -144,7 +153,7 @@ stream.write({ message: "ping again" });
 stream.end();
 ```
 
-#### Sever streaming
+##### Sever streaming
 
 ```js
 const stream = innerClient.serverStream({ message: "ping" });
@@ -159,7 +168,7 @@ stream.on("end", () => {
 });
 ```
 
-#### Bidirectional streaming
+##### Bidirectional streaming
 
 ```js
 const stream = innerClient.bidiStream();
