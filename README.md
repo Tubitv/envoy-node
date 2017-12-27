@@ -270,6 +270,7 @@ For developing or running test of this library, you probably need to:
   $ git add . # or the things you want to commit
   $ npm run commit # and answer the commit message accordingly
   ```
+4. for each commit, the CI will auto release base on commit messages, to allow keeping the version align with Envoy, let's use fix instead of feature unless we want to upgrade minor version.
 
 ## License
 
