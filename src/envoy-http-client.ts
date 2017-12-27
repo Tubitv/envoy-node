@@ -71,6 +71,17 @@ export default class EnvoyHttpClient {
     return text;
   }
 
+  async actionWithoutBody(method: string, url: string, init?: EnvoyHttpRequestInit): Promise<any> {
+    const param = new EnvoyHttpRequestParams(this.envoyContext, init);
+    const res = await envoyFetch(param, url, {
+      method,
+      headers: {
+        accept: APPLICATION_JSON
+      }
+    });
+    return this.returnJsonOrError(res);
+  }
+
   /**
    * send a GET request and expecting return json or empty
    * @param url the URL to get
@@ -78,25 +89,28 @@ export default class EnvoyHttpClient {
    * @throws Error for none 2XX request, a $statusCode will be available in the error object
    */
   async get(url: string, init?: EnvoyHttpRequestInit): Promise<any> {
-    const param = new EnvoyHttpRequestParams(this.envoyContext, init);
-    const res = await envoyFetch(param, url, {
-      headers: {
-        accept: APPLICATION_JSON
-      }
-    });
-    return this.returnJsonOrError(res);
+    return this.actionWithoutBody("GET", url, init);
   }
+
   /**
-   * send a POST request and expecting return json or empty
+   * send a DELETE request and expecting return json or empty
    * @param url the URL to get
-   * @param body the request object, will be serialize to JSON when sending out
    * @param init the params for the request, like retry, timeout
    * @throws Error for none 2XX request, a $statusCode will be available in the error object
    */
-  async post(url: string, body: any, init?: EnvoyHttpRequestInit): Promise<any> {
+  async delete(url: string, init?: EnvoyHttpRequestInit): Promise<any> {
+    return this.actionWithoutBody("DELETE", url, init);
+  }
+
+  async actionWithBody(
+    method: string,
+    url: string,
+    body: any,
+    init?: EnvoyHttpRequestInit
+  ): Promise<any> {
     const param = new EnvoyHttpRequestParams(this.envoyContext, init);
     const res = await envoyFetch(param, url, {
-      method: "POST",
+      method,
       headers: {
         "content-type": APPLICATION_JSON,
         // tslint:disable-next-line:object-literal-key-quotes
@@ -107,5 +121,36 @@ export default class EnvoyHttpClient {
     return this.returnJsonOrError(res);
   }
 
-  // TODO more methods
+  /**
+   * send a POST request and expecting return json or empty
+   * @param url the URL to get
+   * @param body the request object, will be serialize to JSON when sending out
+   * @param init the params for the request, like retry, timeout
+   * @throws Error for none 2XX request, a $statusCode will be available in the error object
+   */
+  async post(url: string, body: any, init?: EnvoyHttpRequestInit): Promise<any> {
+    return this.actionWithBody("POST", url, body, init);
+  }
+
+  /**
+   * send a PATCH request and expecting return json or empty
+   * @param url the URL to get
+   * @param body the request object, will be serialize to JSON when sending out
+   * @param init the params for the request, like retry, timeout
+   * @throws Error for none 2XX request, a $statusCode will be available in the error object
+   */
+  async patch(url: string, body: any, init?: EnvoyHttpRequestInit): Promise<any> {
+    return this.actionWithBody("PATCH", url, body, init);
+  }
+
+  /**
+   * send a PUT request and expecting return json or empty
+   * @param url the URL to get
+   * @param body the request object, will be serialize to JSON when sending out
+   * @param init the params for the request, like retry, timeout
+   * @throws Error for none 2XX request, a $statusCode will be available in the error object
+   */
+  async put(url: string, body: any, init?: EnvoyHttpRequestInit): Promise<any> {
+    return this.actionWithBody("PUT", url, body, init);
+  }
 }
