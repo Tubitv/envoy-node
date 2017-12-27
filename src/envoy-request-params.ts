@@ -1,4 +1,5 @@
 import EnvoyContext from "./envoy-context";
+import { HttpHeader } from "./types";
 
 /**
  * header of envoy max retries setting
@@ -63,10 +64,23 @@ export default abstract class EnvoyRequestParams {
    * reasonable overall timeout.
    */
   readonly perTryTimeout: number;
-  constructor(context: EnvoyContext, maxRetries: number, timeout: number, perTryTimeout: number) {
+
+  /**
+   * extra customer headers to be set in the request
+   */
+  readonly customHeaders: HttpHeader;
+
+  constructor(
+    context: EnvoyContext,
+    maxRetries: number,
+    timeout: number,
+    perTryTimeout: number,
+    headers: HttpHeader = {}
+  ) {
     this.context = context;
     this.maxRetries = maxRetries;
     this.timeout = timeout;
     this.perTryTimeout = perTryTimeout;
+    this.customHeaders = headers;
   }
 }

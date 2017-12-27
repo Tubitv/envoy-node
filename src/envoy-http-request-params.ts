@@ -63,6 +63,7 @@ export interface EnvoyHttpRequestInit {
   retryOn?: HttpRetryOn[];
   timeout?: number;
   perTryTimeout?: number;
+  headers?: HttpHeader;
 }
 
 /**
@@ -82,14 +83,15 @@ export default class EnvoyHttpRequestParams extends EnvoyRequestParams {
    * @param params the params for initialize the request params
    */
   constructor(context: EnvoyContext, params?: EnvoyHttpRequestInit) {
-    const { maxRetries, retryOn, timeout, perTryTimeout }: EnvoyHttpRequestInit = {
+    const { maxRetries, retryOn, timeout, perTryTimeout, headers }: EnvoyHttpRequestInit = {
       maxRetries: -1,
       retryOn: [],
       timeout: -1,
       perTryTimeout: -1,
+      headers: {},
       ...params
     };
-    super(context, maxRetries, timeout, perTryTimeout);
+    super(context, maxRetries, timeout, perTryTimeout, headers);
     this.retryOn = retryOn;
   }
 
@@ -97,7 +99,10 @@ export default class EnvoyHttpRequestParams extends EnvoyRequestParams {
    * assemble the request headers for setting retry.
    */
   assembleRequestHeaders(): HttpHeader {
-    const header: HttpHeader = this.context.assembleTracingHeader();
+    const header: HttpHeader = {
+      ...this.context.assembleTracingHeader(),
+      ...this.customHeaders
+    };
 
     if (this.maxRetries >= 0) {
       header[X_ENVOY_MAX_RETRIES] = `${this.maxRetries}`;
