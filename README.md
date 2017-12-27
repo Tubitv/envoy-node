@@ -11,35 +11,35 @@ There are multiple ways to config Envoy, one of the convenience way to mange dif
 listener:
 - address: tcp://127.0.0.1:12345
   filters:
-    - name: http_connection_manager
-      config:
-        codec_type: auto
-        use_remote_address: true
-        stat_prefix: my-service.egress
-        route_config:
-          virtual_hosts:
-          - name: foo_cluster
-            domains:
-            - foo.service:10080 # Do not miss the port number here
-            routes:
-            - prefix: /
-              cluster: foo_cluster
-          - name: bar_cluster
-            domains:
-            - bar.service:10081 # Do not miss the port number here
-            routes:
-            - prefix: /
-              cluster: bar_cluster
-        filters:
-        - name: router
-          config:
-            dynamic_stats: true
-        tracing:
-          operation_name: egress
-        access_log:
-        - path: /tmp/envoy.my-service.egress.log
-          filter:
-            type: not_healthcheck
+  - name: http_connection_manager
+    config:
+      codec_type: auto
+      use_remote_address: true
+      stat_prefix: my-service.egress
+      route_config:
+        virtual_hosts:
+        - name: foo_cluster
+          domains:
+          - foo.service:10080 # Do not miss the port number here
+          routes:
+          - prefix: /
+            cluster: foo_cluster
+        - name: bar_cluster
+          domains:
+          - bar.service:10081 # Do not miss the port number here
+          routes:
+          - prefix: /
+            cluster: bar_cluster
+      filters:
+      - name: router
+        config:
+          dynamic_stats: true
+      tracing:
+        operation_name: egress
+      access_log:
+      - path: /tmp/envoy.my-service.egress.log
+        filter:
+          type: not_healthcheck
 ```
 
 But it will bring you new problem, your code is becoming verbose:
