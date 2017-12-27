@@ -75,7 +75,7 @@ export default abstract class EnvoyRequestParams {
     maxRetries: number,
     timeout: number,
     perTryTimeout: number,
-    headers: HttpHeader = {}
+    headers: HttpHeader
   ) {
     this.context = context;
     this.maxRetries = maxRetries;
