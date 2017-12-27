@@ -70,7 +70,7 @@ export default abstract class CommonTestServer {
       }
     });
     // wait for envoy to be up
-    await sleep(50);
+    await sleep(100);
   }
 
   async stop() {
