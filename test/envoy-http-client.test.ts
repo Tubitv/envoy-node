@@ -2,7 +2,7 @@ import http from "http";
 import EnvoyHttpClient from "../src/envoy-http-client";
 import EnvoyContext from "../src/envoy-context";
 
-let TEST_PORT = 12345;
+let TEST_PORT = 50000;
 
 describe("envoy http client status code test", () => {
   let contentType: string | undefined;

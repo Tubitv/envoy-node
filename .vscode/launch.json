@@ -13,7 +13,9 @@
       "args": [
         "-i",
         "--runInBand", // https://facebook.github.io/jest/docs/en/cli.html#runinband - don't parallelize
-        "--no-cache" // https://facebook.github.io/jest/docs/en/cli.html#cache - just avoid caching issues
+        "--no-cache", // https://facebook.github.io/jest/docs/en/cli.html#cache - just avoid caching issues
+        // "-t",
+        // "should propagate the tracing header directly in direct mode"
       ],
       // "preLaunchTask": "build",
       "internalConsoleOptions": "openOnSessionStart",

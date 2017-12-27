@@ -82,7 +82,8 @@ export default abstract class GrpcTestServer extends CommonTestServer {
       callback(err, undefined);
     });
     call.on("end", () => {
-      callback(undefined, { message: "default client stream implementation." });
+      // tslint:disable-next-line:no-null-keyword
+      callback(null, { message: "default client stream implementation." });
     });
   }
 

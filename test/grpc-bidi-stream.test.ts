@@ -4,7 +4,6 @@ import GrpcTestServer, { Ping, PingEnvoyClient } from "./lib/grpc-test-server";
 import { sleep } from "./lib/utils";
 import { RequestFunc, EnvoyClient } from "../src/types";
 import { GrpcRetryOn, EnvoyContext } from "../src/envoy-node";
-import { setTimeout } from "timers";
 
 describe("GRPC bidi stream Test", () => {
   it("should propagate the tracing header correctly", async () => {
@@ -67,9 +66,6 @@ describe("GRPC bidi stream Test", () => {
     }();
 
     await server.start();
-
-    // wait for envoy to up
-    await sleep(100);
 
     try {
       const clientMetadata = new grpc.Metadata();
