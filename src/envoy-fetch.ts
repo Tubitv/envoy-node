@@ -51,10 +51,10 @@ export default async function envoyFetch(
     ...envoyParams.assembleRequestHeaders(),
     host
   };
-  const response = await fetch(
-    `http://${envoyParams.context.envoyEgressAddr}:${envoyParams.context.envoyEgressPort}${path}`,
-    refinedInit
-  );
+  const actualUrl = envoyParams.context.directMode
+    ? url
+    : `http://${envoyParams.context.envoyEgressAddr}:${envoyParams.context.envoyEgressPort}${path}`;
+  const response = await fetch(actualUrl, refinedInit);
 
   /* tslint:disable:prefer-object-spread */
   const envoyResponse: EnvoyResponse = Object.assign(response, {

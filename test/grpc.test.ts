@@ -1,14 +1,8 @@
 import grpc, { ServerUnaryCall, sendUnaryData, ServiceError } from "grpc";
-
-import GrpcTestServer, { Ping, PingEnvoyClient } from "./lib/grpc-test-server";
 import { sleep } from "./lib/utils";
+import GrpcTestServer, { Ping, PingEnvoyClient } from "./lib/grpc-test-server";
 import { RequestFunc, EnvoyClient } from "../src/types";
 import { GrpcRetryOn, EnvoyContext } from "../src/envoy-node";
-
-interface PingEnvoyClient extends EnvoyClient {
-  inner: RequestFunc;
-  wrapper: RequestFunc;
-}
 
 describe("GRPC Test", () => {
   it("should propagate the tracing header correctly", async () => {
@@ -25,7 +19,7 @@ describe("GRPC Test", () => {
       async wrapper(call: ServerUnaryCall): Promise<any> {
         const innerClient = new PingEnvoyClient(
           `${GrpcTestServer.domainName}:${this.envoyIngressPort}`,
-          new EnvoyContext(call.metadata)
+          call.metadata
         );
         const ctx = innerClient.envoyContext;
         expect(ctx.clientTraceId).toBe(CLIENT_TRACE_ID);
@@ -46,9 +40,6 @@ describe("GRPC Test", () => {
     }();
 
     await server.start();
-
-    // wait for envoy to up
-    await sleep(100);
 
     try {
       const clientMetadata = new grpc.Metadata();
@@ -119,9 +110,6 @@ describe("GRPC Test", () => {
 
     await server.start();
 
-    // wait for envoy to up
-    await sleep(100);
-
     try {
       const clientMetadata = new grpc.Metadata();
       clientMetadata.add("x-client-trace-id", CLIENT_TRACE_ID);
@@ -181,9 +169,6 @@ describe("GRPC Test", () => {
     }();
 
     await server.start();
-
-    // wait for envoy to up
-    await sleep(100);
 
     try {
       const clientMetadata = new grpc.Metadata();
@@ -260,9 +245,6 @@ describe("GRPC Test", () => {
 
     await server.start();
 
-    // wait for envoy to up
-    await sleep(100);
-
     try {
       const clientMetadata = new grpc.Metadata();
       clientMetadata.add("x-client-trace-id", CLIENT_TRACE_ID);
@@ -271,6 +253,63 @@ describe("GRPC Test", () => {
         grpc.credentials.createInsecure()
       );
       await new Promise<any>((resolve, reject) => {
+        client.wrapper({ message: "ping" }, clientMetadata, (err: ServiceError, response: any) => {
+          if (err) {
+            reject(err);
+            return;
+          }
+          resolve(response);
+        });
+      });
+    } finally {
+      await server.stop();
+    }
+  });
+
+  it("should propagate the tracing header directly in direct mode", async () => {
+    const CLIENT_TRACE_ID = `client-id-${Math.floor(Math.random() * 65536)}`;
+    let requestId: string | undefined;
+    let traceId: string | undefined;
+    let spanId: string | undefined;
+
+    const server = new class extends GrpcTestServer {
+      constructor() {
+        super(4);
+      }
+
+      async wrapper(call: ServerUnaryCall): Promise<any> {
+        const innerClient = new PingEnvoyClient(
+          `${GrpcTestServer.bindHost}:${this.envoyIngressPort}`,
+          new EnvoyContext(call.metadata, undefined, undefined, true)
+        );
+        const ctx = innerClient.envoyContext;
+        expect(ctx.clientTraceId).toBe(CLIENT_TRACE_ID);
+        requestId = ctx.requestId;
+        traceId = ctx.traceId;
+        spanId = ctx.spanId;
+        return innerClient.inner({ message: call.request.message });
+      }
+
+      async inner(call: ServerUnaryCall): Promise<any> {
+        const ctx = new EnvoyContext(call.metadata);
+        expect(ctx.clientTraceId).toBe(CLIENT_TRACE_ID);
+        expect(ctx.requestId).toBe(requestId);
+        expect(ctx.traceId).toBe(traceId);
+        expect(ctx.spanId).toBe(spanId);
+        return { message: "pong" };
+      }
+    }();
+
+    await server.start();
+
+    try {
+      const clientMetadata = new grpc.Metadata();
+      clientMetadata.add("x-client-trace-id", CLIENT_TRACE_ID);
+      const client = new Ping(
+        `${GrpcTestServer.bindHost}:${server.envoyIngressPort}`,
+        grpc.credentials.createInsecure()
+      );
+      const response = await new Promise((resolve, reject) => {
         client.wrapper({ message: "ping" }, clientMetadata, (err: ServiceError, response: any) => {
           if (err) {
             reject(err);

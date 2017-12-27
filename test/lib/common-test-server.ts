@@ -2,6 +2,7 @@ import fs from "fs";
 import util from "util";
 import { spawn, ChildProcess } from "child_process";
 import ZipkinMock from "./zipkin-mock";
+import { sleep } from "./utils";
 
 const readFile = util.promisify(fs.readFile);
 const writeFile = util.promisify(fs.writeFile);
@@ -21,6 +22,9 @@ export default abstract class CommonTestServer {
   readonly envoyAdminPort: number;
   readonly envoyConfigTemplate: string;
   readonly envoyConfigFileName: string;
+
+  envoyStdout = "";
+  envoyStderr = "";
 
   constructor(envoyConfigTemplate: string, serverId: number) {
     let port = TEST_PORT_START + serverId * 10;
@@ -52,11 +56,21 @@ export default abstract class CommonTestServer {
       "test-server"
     ]);
     this.zipkin.start();
+    this.envoy.stdout.on("data", data => {
+      this.envoyStdout += data;
+    });
+    this.envoy.stderr.on("data", data => {
+      this.envoyStderr += data;
+    });
     this.envoy.once("exit", code => {
       if (code) {
         console.log(`Envoy exited abnormal: ${code}`);
+        console.log("stdout", this.envoyStdout);
+        console.log("stderr", this.envoyStderr);
       }
     });
+    // wait for envoy to be up
+    await sleep(50);
   }
 
   async stop() {

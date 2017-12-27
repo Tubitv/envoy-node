@@ -135,10 +135,10 @@ export default function envoyProtoDecorator<T extends EnvoyClient>(
       } else {
         envoyContext = new EnvoyContext(ctx);
       }
-      super(
-        `${envoyContext.envoyEgressAddr}:${envoyContext.envoyEgressPort}`,
-        credentials.createInsecure()
-      );
+      const actualAddr = envoyContext.directMode
+        ? address
+        : `${envoyContext.envoyEgressAddr}:${envoyContext.envoyEgressPort}`;
+      super(actualAddr, credentials.createInsecure());
       this.originalAddress = address;
       this.envoyContext = envoyContext;
     }

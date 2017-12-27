@@ -1,10 +1,8 @@
 import grpc, { ServerUnaryCall, sendUnaryData, ServiceError, ServerReadableStream } from "grpc";
 
 import GrpcTestServer, { Ping, PingEnvoyClient } from "./lib/grpc-test-server";
-import { sleep } from "./lib/utils";
 import { RequestFunc, EnvoyClient } from "../src/types";
 import { GrpcRetryOn, EnvoyContext } from "../src/envoy-node";
-import { setTimeout } from "timers";
 
 describe("GRPC client stream Test", () => {
   it("should propagate the tracing header correctly", async () => {
@@ -55,15 +53,13 @@ describe("GRPC client stream Test", () => {
           callback(err, undefined);
         });
         call.on("end", () => {
-          callback(undefined, { message: "clientStream:pong" });
+          // tslint:disable-next-line:no-null-keyword
+          callback(null, { message: "clientStream:pong" });
         });
       }
     }();
 
     await server.start();
-
-    // wait for envoy to up
-    await sleep(100);
 
     try {
       const clientMetadata = new grpc.Metadata();
@@ -140,15 +136,13 @@ describe("GRPC client stream Test", () => {
           callback(err, undefined);
         });
         call.on("end", () => {
-          callback(undefined, { message: "clientStream:pong" });
+          // tslint:disable-next-line:no-null-keyword
+          callback(null, { message: "clientStream:pong" });
         });
       }
     }();
 
     await server.start();
-
-    // wait for envoy to up
-    await sleep(100);
 
     try {
       const clientMetadata = new grpc.Metadata();

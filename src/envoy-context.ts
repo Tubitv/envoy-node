@@ -196,6 +196,12 @@ export default class EnvoyContext {
   readonly expectedRequestTimeout?: number;
 
   /**
+   * For dev or test environment, we usually don't have Envoy running. By setting directMode = true
+   * will make all the traffic being sent directly.
+   */
+  readonly directMode: boolean;
+
+  /**
    * initialize an EnvoyContext
    * @param meta you can either give HTTP header for grpc.Metadata, it will be converted accordingly.
    * @param envoyEgressPort optional egress port information
@@ -204,11 +210,14 @@ export default class EnvoyContext {
    * @param envoyEgressAddr optional egress address information
    *  if not specified, it will be read from meta / environment variable ENVOY_EGRESS_ADDR / default value: 127.0.0.1
    *  (one after another)
+   * @param directMode setting this to true will make all traffic sending directly without envoy. if this field is
+   *  not specified, it will read from environment variable ENVOY_DIRECT_MODE equal to either `true` or `1`
    */
   constructor(
     meta: HttpHeader | Metadata,
     envoyEgressPort: number | undefined = undefined,
-    envoyEgressAddr: string | undefined = undefined
+    envoyEgressAddr: string | undefined = undefined,
+    directMode: boolean | undefined = undefined
   ) {
     let expectedRequestTimeoutString: string | undefined;
     let envoyEgressAddrFromHeader: string | undefined;
@@ -260,6 +269,12 @@ export default class EnvoyContext {
       (envoyEgressPortStringFromHeader && parseInt(envoyEgressPortStringFromHeader, 10)) ||
       ENVOY_EGRESS_PORT;
     this.envoyEgressAddr = envoyEgressAddr || envoyEgressAddrFromHeader || ENVOY_EGRESS_ADDR;
+    if (directMode === undefined) {
+      this.directMode =
+        process.env.ENVOY_DIRECT_MODE === "true" || process.env.ENVOY_DIRECT_MODE === "1";
+    } else {
+      this.directMode = directMode;
+    }
   }
 
   /**
