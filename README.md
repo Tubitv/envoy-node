@@ -259,7 +259,7 @@ For developing or running test of this library, you probably need to:
 1. have an envoy binary in your `PATH`, or:
   ```shell
   $ npm run download-envoy
-  $ export export PATH=./node_modules/.bin/:$PATH
+  $ export PATH=./node_modules/.bin/:$PATH
   ```
 2. there is a bug in gRPC's typing, run the following to fix it:
   ```shell
@@ -268,9 +268,8 @@ For developing or running test of this library, you probably need to:
 3. to commit your code change:
   ```shell
   $ git add . # or the things you want to commit
-  $ npm run commit
+  $ npm run commit # and answer the commit message accordingly
   ```
-  and answer the commit message accordingly.
 
 ## License
 
