@@ -1,0 +1,18 @@
+language: node_js
+cache:
+  yarn: true
+  directories:
+    - node_modules
+notifications:
+  email: false
+node_js:
+  - node
+script:
+  - export PATH=./node_modules/.bin/:$PATH
+  - npm run download-envoy
+  - npm run fix-grpc-typing-bug
+  - npm run test:prod && npm run build
+after_success:
+  - npm run report-coverage
+  - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then npm run deploy-docs; fi'
+  - npm run semantic-release
