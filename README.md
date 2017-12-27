@@ -218,7 +218,7 @@ envoyFetch(params, url, init /* init like original node-fetch */)
 
 // for gRPC
 const client = new Ping((
-  `${context.envoyEgressAddr}:${context, envoyEgressPort}`, // envoy egress port
+  `${context.envoyEgressAddr}:${context.envoyEgressPort}`, // envoy egress port
   grpc.credentials.createInsecure()
 );
 const requestMetadata = params.assembleRequestMeta()
@@ -235,6 +235,42 @@ client.pathToRpc(
 ```
 
 Check out the [detail document](https://tubitv.github.io/envoy-node/) if needed.
+
+## For dev and test
+
+If you are developing the application, you may probably do not have Envoy running. You may want to call the service directly:
+
+Either:
+
+```js
+new EnvoyContext(headers, undefined, undefined, true)
+```
+
+or:
+
+```shell
+export ENVOY_DIRECT_MODE=true # 1 works as well
+```
+
+## Contributing
+
+For developing or running test of this library, you probably need to:
+
+1. have an envoy binary in your `PATH`, or:
+  ```shell
+  $ npm run download-envoy
+  $ export export PATH=./node_modules/.bin/:$PATH
+  ```
+2. there is a bug in gRPC's typing, run the following to fix it:
+  ```shell
+  $ npm run fix-grpc-typing-bug
+  ```
+3. to commit your code change:
+  ```shell
+  $ git add . # or the things you want to commit
+  $ npm run commit
+  ```
+  and answer the commit message accordingly.
 
 ## License
 
