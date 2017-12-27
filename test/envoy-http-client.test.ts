@@ -40,20 +40,22 @@ describe("envoy http client status code test", () => {
 
     const client = new EnvoyHttpClient(new EnvoyContext({}, testPort));
 
-    let notFoundHappended = false;
-    let noException = false;
+    for (const method of ["get", "delete", "post", "patch", "put"]) {
+      let notFoundHappened = false;
+      let noException = false;
 
-    try {
-      await client.get("http://foo/bar");
-      noException = true;
-    } catch (e) {
-      expect(e.$statusCode).toBe(404);
-      expect(e.description).toBe("NOT FOUND");
-      notFoundHappended = true;
+      try {
+        await client[method]("http://foo/bar");
+        noException = true;
+      } catch (e) {
+        expect(e.$statusCode).toBe(404);
+        expect(e.description).toBe("NOT FOUND");
+        notFoundHappened = true;
+      }
+
+      expect(notFoundHappened).toBeTruthy();
+      expect(noException).toBeFalsy();
     }
-
-    expect(notFoundHappended).toBeTruthy();
-    expect(noException).toBeFalsy();
   });
 
   it("should process 404 correctly (text/plain)", async () => {
@@ -63,7 +65,7 @@ describe("envoy http client status code test", () => {
 
     const client = new EnvoyHttpClient(new EnvoyContext({}, testPort));
 
-    let notFoundHappended = false;
+    let notFoundHappened = false;
     let noException = false;
 
     try {
@@ -72,10 +74,10 @@ describe("envoy http client status code test", () => {
     } catch (e) {
       expect(e.$statusCode).toBe(404);
       expect(e.message).toBe("NOT FOUND");
-      notFoundHappended = true;
+      notFoundHappened = true;
     }
 
-    expect(notFoundHappended).toBeTruthy();
+    expect(notFoundHappened).toBeTruthy();
     expect(noException).toBeFalsy();
   });
 
@@ -93,7 +95,7 @@ describe("envoy http client status code test", () => {
 
     const client = new EnvoyHttpClient(new EnvoyContext({}, testPort));
 
-    let notFoundHappended = false;
+    let notFoundHappened = false;
     let noException = false;
 
     try {
@@ -102,21 +104,21 @@ describe("envoy http client status code test", () => {
     } catch (e) {
       expect(e.$statusCode).toBe(200);
       expect(e.message).toBe("Unexpected content type: null, http status: 200");
-      notFoundHappended = true;
+      notFoundHappened = true;
     }
 
-    expect(notFoundHappended).toBeTruthy();
+    expect(notFoundHappened).toBeTruthy();
     expect(noException).toBeFalsy();
   });
 
-  it("should process neithor json nor text correctly (application/bin)", async () => {
+  it("should process neither json nor text correctly (application/bin)", async () => {
     statusCode = 200;
     contentType = "application/bin";
     body = "i pretend i am bin";
 
     const client = new EnvoyHttpClient(new EnvoyContext({}, testPort));
 
-    let notFoundHappended = false;
+    let notFoundHappened = false;
     let noException = false;
 
     try {
@@ -125,10 +127,10 @@ describe("envoy http client status code test", () => {
     } catch (e) {
       expect(e.$statusCode).toBe(200);
       expect(e.message).toBe("Unexpected content type: application/bin, http status: 200");
-      notFoundHappended = true;
+      notFoundHappened = true;
     }
 
-    expect(notFoundHappended).toBeTruthy();
+    expect(notFoundHappened).toBeTruthy();
     expect(noException).toBeFalsy();
   });
 
