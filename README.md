@@ -85,7 +85,7 @@ async function awesomeAPI(req, res) {
     maxRetries: 3,
     // each retry will timeout in 300 ms
     perTryTimeout: 300,
-    // any other headers you want o set
+    // any other headers you want to set
     headers: {
       "x-extra-header-you-want": "value",
     },
@@ -126,7 +126,7 @@ async function awesomeAPI(call, callback) {
     maxRetries: 3,
     // each retry will timeout in 300 ms
     perTryTimeout: 300,
-    // any other headers you want o set
+    // any other headers you want to set
     headers: {
       "x-extra-header-you-want": "value",
     },
@@ -247,7 +247,7 @@ client.pathToRpc(
 
 Check out the [detail document](https://tubitv.github.io/envoy-node/) if needed.
 
-## For dev and test, or migration to Envoy
+## For dev and test, or migrating to Envoy
 
 If you are developing the application, you may probably do not have Envoy running. You may want to call the service directly:
 
