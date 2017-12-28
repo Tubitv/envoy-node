@@ -135,7 +135,7 @@ export default function envoyProtoDecorator<T extends EnvoyClient>(
       } else {
         envoyContext = new EnvoyContext(ctx);
       }
-      const actualAddr = envoyContext.directMode
+      const actualAddr = envoyContext.shouldCallWithoutEnvoy(address)
         ? address
         : `${envoyContext.envoyEgressAddr}:${envoyContext.envoyEgressPort}`;
       super(actualAddr, credentials.createInsecure());

@@ -10,6 +10,7 @@ import {
   EnvoyHttpClient,
   envoyFetch
 } from "../src/envoy-node";
+import { EnvoyContextInit } from "../src/envoy-context";
 
 describe("HTTP Test", () => {
   it("should propagate the tracing header correctly", async () => {
@@ -252,7 +253,11 @@ describe("HTTP Test", () => {
       }
 
       async wrapper(request: Request): Promise<any> {
-        const ctx = new EnvoyContext(request.headers as HttpHeader, undefined, undefined, true);
+        const init: EnvoyContextInit = {
+          meta: request.headers as HttpHeader,
+          directMode: true
+        };
+        const ctx = new EnvoyContext(init);
         const client = new EnvoyHttpClient(ctx);
         // asserts
         expect(ctx.clientTraceId).toBe(CLIENT_TRACE_ID);

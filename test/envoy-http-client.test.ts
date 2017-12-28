@@ -1,6 +1,6 @@
 import http from "http";
 import EnvoyHttpClient from "../src/envoy-http-client";
-import EnvoyContext from "../src/envoy-context";
+import EnvoyContext, { EnvoyContextInit } from "../src/envoy-context";
 
 let TEST_PORT = 50000;
 
@@ -38,14 +38,19 @@ describe("envoy http client status code test", () => {
     body = '{ "description": "NOT FOUND" }';
     statusCode = 404;
 
-    const client = new EnvoyHttpClient(new EnvoyContext({}, testPort));
+    const client = new EnvoyHttpClient(
+      new EnvoyContext({
+        meta: {},
+        envoyEgressPort: testPort
+      } as EnvoyContextInit)
+    );
 
     for (const method of ["get", "delete", "post", "patch", "put"]) {
       let notFoundHappened = false;
       let noException = false;
 
       try {
-        await client[method]("http://foo/bar");
+        await (client as any)[method]("http://foo/bar");
         noException = true;
       } catch (e) {
         expect(e.$statusCode).toBe(404);
@@ -63,7 +68,12 @@ describe("envoy http client status code test", () => {
     body = "NOT FOUND";
     statusCode = 404;
 
-    const client = new EnvoyHttpClient(new EnvoyContext({}, testPort));
+    const client = new EnvoyHttpClient(
+      new EnvoyContext({
+        meta: {},
+        envoyEgressPort: testPort
+      } as EnvoyContextInit)
+    );
 
     let notFoundHappened = false;
     let noException = false;
@@ -84,7 +94,12 @@ describe("envoy http client status code test", () => {
   it("should process 204 correctly", async () => {
     statusCode = 204;
 
-    const client = new EnvoyHttpClient(new EnvoyContext({}, testPort));
+    const client = new EnvoyHttpClient(
+      new EnvoyContext({
+        meta: {},
+        envoyEgressPort: testPort
+      } as EnvoyContextInit)
+    );
     const response = await client.get("http://foo/bar");
     expect(response).toBe(undefined);
   });
@@ -93,7 +108,12 @@ describe("envoy http client status code test", () => {
     statusCode = 200;
     body = "no content type is provided";
 
-    const client = new EnvoyHttpClient(new EnvoyContext({}, testPort));
+    const client = new EnvoyHttpClient(
+      new EnvoyContext({
+        meta: {},
+        envoyEgressPort: testPort
+      } as EnvoyContextInit)
+    );
 
     let notFoundHappened = false;
     let noException = false;
@@ -116,7 +136,12 @@ describe("envoy http client status code test", () => {
     contentType = "application/bin";
     body = "i pretend i am bin";
 
-    const client = new EnvoyHttpClient(new EnvoyContext({}, testPort));
+    const client = new EnvoyHttpClient(
+      new EnvoyContext({
+        meta: {},
+        envoyEgressPort: testPort
+      } as EnvoyContextInit)
+    );
 
     let notFoundHappened = false;
     let noException = false;
@@ -139,7 +164,12 @@ describe("envoy http client status code test", () => {
     contentType = "text/plain";
     body = "hello world!";
 
-    const client = new EnvoyHttpClient(new EnvoyContext({}, testPort));
+    const client = new EnvoyHttpClient(
+      new EnvoyContext({
+        meta: {},
+        envoyEgressPort: testPort
+      } as EnvoyContextInit)
+    );
 
     const text = await client.get("http://foo/bar");
     expect(text).toBe(body);

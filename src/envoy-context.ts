@@ -98,11 +98,71 @@ export function assignHeader(
 }
 
 /**
+ * params for init envoy context
+ */
+export interface EnvoyContextInit extends Object {
+  /**
+   * you can either give HTTP header for grpc.Metadata, it will be converted accordingly.
+   */
+  meta: HttpHeader | Metadata;
+
+  /**
+   * optional egress port information
+   * if not specified, it will be read from meta / environment variable ENVOY_EGRESS_PORT /
+   * default value: 12345 (one after another)
+   */
+  envoyEgressPort?: number;
+
+  /**
+   * optional egress address information
+   * if not specified, it will be read from meta / environment variable ENVOY_EGRESS_ADDR /
+   * default value: 127.0.0.1 (one after another)
+   */
+  envoyEgressAddr?: string;
+
+  /**
+   * For easier migrate service to envoy step by step, we can route traffic to envoy for those service
+   * migrated. Fill this set for the migrated service.
+   * This field is default to `undefined` which means all traffic will be route to envoy.
+   * If you set this to be an empty set, then no traffic will be route to envoy.
+   */
+  envoyManagedHosts?: Set<string>;
+
+  /**
+   * For dev or test environment, we usually don't have Envoy running. By setting directMode = true
+   * will make all the traffic being sent directly.
+   * If you set directMode to true, envoyManagedHosts will be ignored and set to an empty set.
+   */
+  directMode?: boolean;
+}
+
+export function ensureItsEnvoyContextInit(
+  param: Metadata | HttpHeader | EnvoyContextInit
+): EnvoyContextInit {
+  // test if this is a grpc.Metadata
+  if (param instanceof Metadata) {
+    return {
+      meta: param
+    };
+  }
+
+  // this if this is a HttpHeader
+  const asInit = param as EnvoyContextInit;
+  if (!asInit.meta || typeof asInit.meta === "string" || Array.isArray(asInit.meta)) {
+    return {
+      meta: param as HttpHeader
+    };
+  }
+
+  return asInit;
+}
+
+/**
  * EnvoyContext is where all information related to the current envoy environment.
  */
 export default class EnvoyContext {
   /**
-   * the binded address of envoy egress
+   * the bind address of envoy egress
    */
   readonly envoyEgressAddr: string;
 
@@ -198,27 +258,31 @@ export default class EnvoyContext {
   /**
    * For dev or test environment, we usually don't have Envoy running. By setting directMode = true
    * will make all the traffic being sent directly.
+   * If you set directMode to true, envoyManagedHosts will be ignored and set to an empty set.
    */
-  readonly directMode: boolean;
+  private readonly directMode: boolean;
+
+  /**
+   * For easier migrate service to envoy step by step, we can route traffic to envoy for those service
+   * migrated. Fill this set for the migrated service.
+   * This field is default to `undefined` which means all traffic will be route to envoy.
+   * If you set this to be an empty set, then no traffic will be route to envoy.
+   */
+  private readonly envoyManagedHosts?: Set<string>;
 
   /**
    * initialize an EnvoyContext
-   * @param meta you can either give HTTP header for grpc.Metadata, it will be converted accordingly.
-   * @param envoyEgressPort optional egress port information
-   *  if not specified, it will be read from meta / environment variable ENVOY_EGRESS_PORT / default value: 12345
-   *  (one after another)
-   * @param envoyEgressAddr optional egress address information
-   *  if not specified, it will be read from meta / environment variable ENVOY_EGRESS_ADDR / default value: 127.0.0.1
-   *  (one after another)
-   * @param directMode setting this to true will make all traffic sending directly without envoy. if this field is
-   *  not specified, it will read from environment variable ENVOY_DIRECT_MODE equal to either `true` or `1`
+   * @param options options for init envoy context
    */
-  constructor(
-    meta: HttpHeader | Metadata,
-    envoyEgressPort: number | undefined = undefined,
-    envoyEgressAddr: string | undefined = undefined,
-    directMode: boolean | undefined = undefined
-  ) {
+  constructor(options: Metadata | HttpHeader | EnvoyContextInit) {
+    const {
+      meta,
+      envoyEgressPort,
+      envoyEgressAddr,
+      envoyManagedHosts,
+      directMode
+    } = ensureItsEnvoyContextInit(options);
+
     let expectedRequestTimeoutString: string | undefined;
     let envoyEgressAddrFromHeader: string | undefined;
     let envoyEgressPortStringFromHeader: string | undefined;
@@ -269,11 +333,18 @@ export default class EnvoyContext {
       (envoyEgressPortStringFromHeader && parseInt(envoyEgressPortStringFromHeader, 10)) ||
       ENVOY_EGRESS_PORT;
     this.envoyEgressAddr = envoyEgressAddr || envoyEgressAddrFromHeader || ENVOY_EGRESS_ADDR;
+
     if (directMode === undefined) {
       this.directMode =
         process.env.ENVOY_DIRECT_MODE === "true" || process.env.ENVOY_DIRECT_MODE === "1";
     } else {
       this.directMode = directMode;
+    }
+
+    if (this.directMode) {
+      this.envoyManagedHosts = new Set<string>();
+    } else {
+      this.envoyManagedHosts = envoyManagedHosts;
     }
   }
 
@@ -292,5 +363,11 @@ export default class EnvoyContext {
     assignHeader(header, X_REQUEST_ID, this.requestId);
     assignHeader(header, X_CLIENT_TRACE_ID, this.clientTraceId);
     return header;
+  }
+
+  shouldCallWithoutEnvoy(host: string): boolean {
+    return (
+      this.directMode || (this.envoyManagedHosts !== undefined && !this.envoyManagedHosts.has(host))
+    );
   }
 }

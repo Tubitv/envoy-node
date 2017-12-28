@@ -38,7 +38,10 @@ export default async function envoyFetch(
   if (!protocol || !host || !path) {
     throw new Error("Cannot read the URL for envoy to fetch");
   }
-  if (protocol !== "http:" && !envoyParams.context.directMode) {
+
+  const callDirectly = envoyParams.context.shouldCallWithoutEnvoy(host);
+
+  if (protocol !== "http:" && !callDirectly) {
     throw new Error(`envoy fetch is designed only for http for now, current found: ${url}`);
   }
   const refinedInit: RequestInit = { ...init };
@@ -51,7 +54,7 @@ export default async function envoyFetch(
     ...envoyParams.assembleRequestHeaders(),
     host
   };
-  const actualUrl = envoyParams.context.directMode
+  const actualUrl = callDirectly
     ? url
     : `http://${envoyParams.context.envoyEgressAddr}:${envoyParams.context.envoyEgressPort}${path}`;
   const response = await fetch(actualUrl, refinedInit);
