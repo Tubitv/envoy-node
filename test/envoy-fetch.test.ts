@@ -16,7 +16,7 @@ describe("envoy-fetch test", () => {
     const param = new EnvoyHttpRequestParams(new EnvoyContext({}));
     envoyFetch(param, "https://foo/bar").catch((e: Error) => {
       expect(e.message).toBe(
-        "envoy fetch is designed only for http for now, current found: https:"
+        "envoy fetch is designed only for http for now, current found: https://foo/bar"
       );
     });
   });

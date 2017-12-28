@@ -48,8 +48,10 @@ export default function envoyRequestParamsRefiner(
   if (!protocol || !host || !path) {
     throw new Error("Cannot read the URL for envoy to fetch");
   }
-  if (protocol !== "http:") {
-    throw new Error(`envoy request is designed only for http for now, current found: ${protocol}`);
+  if (protocol !== "http:" && !envoyParams.context.directMode) {
+    throw new Error(
+      `envoy request is designed only for http for now, current found: ${refinedParams.url}`
+    );
   }
 
   const oldHeaders: HttpHeader = {};
