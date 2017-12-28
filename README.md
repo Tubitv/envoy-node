@@ -191,7 +191,7 @@ stream.end();
 If you want to have more control of your code, you can also use the low level APIs of this library:
 
 ```js
-const { envoyFetch, EnvoyContext, EnvoyHttpRequestParams, EnvoyGrpcRequestParams } = require("envoy-node");
+const { envoyFetch, EnvoyContext, EnvoyHttpRequestParams, EnvoyGrpcRequestParams, envoyRequestParamsRefiner } = require("envoy-node");
 
 // ...
 
@@ -215,6 +215,10 @@ envoyFetch(params, url, init /* init like original node-fetch */)
     return res.json(); // or res.text(), just use it as what node-fetch returned
   })
   .then(/* ... */)
+
+// you are using request?
+const yourOldRequestParams = {}; /* url or options */
+request(envoyRequestParamsRefiner(yourOldRequestParams, context /* or headers, grpc.Metadata */ ))
 
 // for gRPC
 const client = new Ping((

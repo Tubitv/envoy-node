@@ -4,3 +4,4 @@ export { default as EnvoyGrpcRequestParams, GrpcRetryOn } from "./envoy-grpc-req
 export { default as EnvoyHttpClient } from "./envoy-http-client";
 export { default as EnvoyHttpRequestParams, HttpRetryOn } from "./envoy-http-request-params";
 export { default as envoyProtoDecorator } from "./envoy-proto-decorator";
+export { default as envoyRequestParamsRefiner } from "./envoy-request-params-refiner";
