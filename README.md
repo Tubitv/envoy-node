@@ -85,6 +85,10 @@ async function awesomeAPI(req, res) {
     maxRetries: 3,
     // each retry will timeout in 300 ms
     perTryTimeout: 300,
+    // any other headers you want o set
+    headers: {
+      "x-extra-header-you-want": "value",
+    },
   };
   const serializedJsonResponse = await client.post(url, request, optionalParams);
   res.send({ serializedJsonResponse });
@@ -122,6 +126,10 @@ async function awesomeAPI(call, callback) {
     maxRetries: 3,
     // each retry will timeout in 300 ms
     perTryTimeout: 300,
+    // any other headers you want o set
+    headers: {
+      "x-extra-header-you-want": "value",
+    },
   };
   const response = await client.pathToRpc(request, optionalParams);
   callback(undefined, { remoteResponse: response });
@@ -239,14 +247,32 @@ client.pathToRpc(
 
 Check out the [detail document](https://tubitv.github.io/envoy-node/) if needed.
 
-## For dev and test
+## For dev and test, or migration to Envoy
 
 If you are developing the application, you may probably do not have Envoy running. You may want to call the service directly:
 
 Either:
 
 ```js
-new EnvoyContext(headers, undefined, undefined, true)
+new EnvoyContext({
+  meta: grpcMetadata_Or_HttpHeader,
+
+  /**
+   * For dev or test environment, we usually don't have Envoy running. By setting directMode = true
+   * will make all the traffic being sent directly.
+   * If you set directMode to true, envoyManagedHosts will be ignored and set to an empty set.
+   */
+  directMode: true,
+
+  /**
+   * For easier migrate service to envoy step by step, we can route traffic to envoy for those service
+   * migrated. Fill this set for the migrated service.
+   * This field is default to `undefined` which means all traffic will be route to envoy.
+   * If you set this to be an empty set, then no traffic will be route to envoy.
+   */
+  envoyManagedHosts: new Set(["some-hostname:8080"]);
+
+})
 ```
 
 or:
