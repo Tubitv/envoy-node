@@ -23,7 +23,7 @@ export default function envoyRequestParamsRefiner(
   params: string | RequestParams,
   ctx: EnvoyContext | Metadata | HttpHeader,
   init?: EnvoyHttpRequestInit
-) {
+): RequestParams {
   let envoyContext: EnvoyContext;
   if (ctx instanceof EnvoyContext) {
     envoyContext = ctx;
@@ -48,7 +48,10 @@ export default function envoyRequestParamsRefiner(
   if (!protocol || !host || !path) {
     throw new Error("Cannot read the URL for envoy to fetch");
   }
-  if (protocol !== "http:" && !envoyParams.context.directMode) {
+
+  const callDirectly = envoyParams.context.shouldCallWithoutEnvoy(host);
+
+  if (protocol !== "http:" && !callDirectly) {
     throw new Error(
       `envoy request is designed only for http for now, current found: ${refinedParams.url}`
     );
@@ -62,7 +65,7 @@ export default function envoyRequestParamsRefiner(
     ...envoyParams.assembleRequestHeaders(),
     host
   };
-  refinedParams.url = envoyParams.context.directMode
+  refinedParams.url = callDirectly
     ? refinedParams.url
     : `http://${envoyParams.context.envoyEgressAddr}:${envoyParams.context.envoyEgressPort}${path}`;
 

@@ -3,6 +3,7 @@ import { sleep } from "./lib/utils";
 import GrpcTestServer, { Ping, PingEnvoyClient } from "./lib/grpc-test-server";
 import { RequestFunc, EnvoyClient } from "../src/types";
 import { GrpcRetryOn, EnvoyContext } from "../src/envoy-node";
+import { EnvoyContextInit } from "../src/envoy-context";
 
 describe("GRPC Test", () => {
   it("should propagate the tracing header correctly", async () => {
@@ -278,9 +279,13 @@ describe("GRPC Test", () => {
       }
 
       async wrapper(call: ServerUnaryCall): Promise<any> {
+        const init: EnvoyContextInit = {
+          meta: call.metadata,
+          directMode: true
+        };
         const innerClient = new PingEnvoyClient(
           `${GrpcTestServer.bindHost}:${this.envoyIngressPort}`,
-          new EnvoyContext(call.metadata, undefined, undefined, true)
+          new EnvoyContext(init)
         );
         const ctx = innerClient.envoyContext;
         expect(ctx.clientTraceId).toBe(CLIENT_TRACE_ID);
