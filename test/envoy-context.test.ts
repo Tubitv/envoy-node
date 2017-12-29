@@ -1,7 +1,8 @@
 import EnvoyContext, {
   readMetaAsStringOrUndefined,
   readHeaderOrUndefined,
-  assignHeader
+  assignHeader,
+  refineManagedHostArray
 } from "../src/envoy-context";
 import { Metadata } from "grpc";
 import { HttpHeader } from "../src/types";
@@ -47,5 +48,18 @@ describe("Envoy context test", () => {
     const ctx = new EnvoyContext({});
     expect(ctx.envoyEgressAddr).toBe("127.0.0.1");
     expect(ctx.envoyEgressPort).toBe(12345);
+  });
+
+  it("should sanitize header correctly", () => {
+    expect(refineManagedHostArray([])).toEqual([]);
+    expect(refineManagedHostArray(["host:1234"])).toEqual(["host:1234"]);
+    expect(refineManagedHostArray(["host:1234", "foo:1234"])).toEqual(["host:1234", "foo:1234"]);
+    expect(refineManagedHostArray(["host:1234, foo:1234"])).toEqual(["host:1234", "foo:1234"]);
+    expect(refineManagedHostArray(["host:1234,foo:1234"])).toEqual(["host:1234", "foo:1234"]);
+    expect(refineManagedHostArray(["host:1234,foo:1234", "bar:1234"])).toEqual([
+      "host:1234",
+      "foo:1234",
+      "bar:1234"
+    ]);
   });
 });
