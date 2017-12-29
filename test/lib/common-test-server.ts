@@ -22,11 +22,12 @@ export default abstract class CommonTestServer {
   readonly envoyAdminPort: number;
   readonly envoyConfigTemplate: string;
   readonly envoyConfigFileName: string;
+  readonly useManagedHostHeader: boolean;
 
   envoyStdout = "";
   envoyStderr = "";
 
-  constructor(envoyConfigTemplate: string, serverId: number) {
+  constructor(envoyConfigTemplate: string, serverId: number, useManagedHostHeader: boolean) {
     let port = TEST_PORT_START + serverId * 10;
     this.servicePort = port++;
     this.envoyIngressPort = port++;
@@ -36,10 +37,11 @@ export default abstract class CommonTestServer {
     this.zipkin = new ZipkinMock(zipkinPort);
     this.envoyConfigTemplate = `${__dirname}/${envoyConfigTemplate}`;
     this.envoyConfigFileName = `/tmp/envoy-test-config-${this.servicePort}.yaml`;
+    this.useManagedHostHeader = useManagedHostHeader;
   }
 
   async start() {
-    const envoyConfig = (await readFile(this.envoyConfigTemplate))
+    let envoyConfig = (await readFile(this.envoyConfigTemplate))
       .toString()
       .replace(/INGRESS_PORT/g, `${this.envoyIngressPort}`)
       .replace(/EGRESS_PORT/g, `${this.envoyEgressPort}`)
@@ -48,6 +50,14 @@ export default abstract class CommonTestServer {
       .replace(/BIND_HOST/g, `${CommonTestServer.bindHost}`)
       .replace(/DOMAIN_NAME/g, `${CommonTestServer.domainName}`)
       .replace(/SERVICE_PORT/g, `${this.servicePort}`);
+    if (this.useManagedHostHeader) {
+      envoyConfig = envoyConfig.replace(
+        /# MANAGED_HOST_REPLACEMENT/g,
+        `- { "key": "x-tubi-envoy-managed-host", "value": "${CommonTestServer.domainName}:${
+          this.envoyIngressPort
+        }" }`
+      );
+    }
     await writeFile(this.envoyConfigFileName, envoyConfig);
     this.envoy = spawn("envoy", [
       "-c",

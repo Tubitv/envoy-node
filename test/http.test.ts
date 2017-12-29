@@ -249,13 +249,67 @@ describe("HTTP Test", () => {
 
     const server = new class extends HttpTestServer {
       constructor() {
-        super(10);
+        super(14);
       }
 
       async wrapper(request: Request): Promise<any> {
         const init: EnvoyContextInit = {
           meta: request.headers as HttpHeader,
           directMode: true
+        };
+        const ctx = new EnvoyContext(init);
+        const client = new EnvoyHttpClient(ctx);
+        // asserts
+        expect(ctx.clientTraceId).toBe(CLIENT_TRACE_ID);
+        requestId = ctx.requestId;
+        traceId = ctx.traceId;
+        spanId = ctx.spanId;
+        // send request to inner
+        return client.post(
+          `http://${HttpTestServer.bindHost}:${this.envoyIngressPort}/inner`,
+          request.body
+        );
+      }
+
+      async inner(request: Request): Promise<any> {
+        expect(request.body.message).toBe("ping");
+        const ctx = new EnvoyContext(request.headers as HttpHeader);
+        expect(ctx.clientTraceId).toBe(CLIENT_TRACE_ID);
+        expect(ctx.requestId).toBe(requestId);
+        expect(ctx.traceId).toBe(traceId);
+        expect(ctx.spanId).toBe(spanId);
+        return { message: "pong" };
+      }
+    }();
+
+    await server.start();
+
+    try {
+      const response = await simplePost(
+        `http://${HttpTestServer.bindHost}:${server.envoyIngressPort}/wrapper`,
+        { message: "ping" },
+        { "x-client-trace-id": CLIENT_TRACE_ID }
+      );
+      expect(response.message).toBe("pong");
+    } finally {
+      await server.stop();
+    }
+  });
+
+  it("should propagate the tracing header directly in direct mode", async () => {
+    const CLIENT_TRACE_ID = `client-id-${Math.floor(Math.random() * 65536)}`;
+    let requestId: string | undefined;
+    let traceId: string | undefined;
+    let spanId: string | undefined;
+
+    const server = new class extends HttpTestServer {
+      constructor() {
+        super(15, true);
+      }
+
+      async wrapper(request: Request): Promise<any> {
+        const init: EnvoyContextInit = {
+          meta: request.headers as HttpHeader
         };
         const ctx = new EnvoyContext(init);
         const client = new EnvoyHttpClient(ctx);

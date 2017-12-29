@@ -268,6 +268,17 @@ new EnvoyContext({
    * For easier migrate service to envoy step by step, we can route traffic to envoy for those service
    * migrated. Fill this set for the migrated service.
    * This field is default to `undefined` which means all traffic will be route to envoy.
+   * If this field is set to `undefined`, this library will also try to read it from `x-tubi-envoy-managed-host`.
+   * You can set in envoy config, like this: 
+   * 
+   * ```yaml
+   * request_headers_to_add:
+   * - key: x-tubi-envoy-managed-host
+   *   value: hostname:12345
+   * - key: x-tubi-envoy-managed-host
+   *   value: foo.bar:8080
+   * ```
+   * 
    * If you set this to be an empty set, then no traffic will be route to envoy.
    */
   envoyManagedHosts: new Set(["some-hostname:8080"]);

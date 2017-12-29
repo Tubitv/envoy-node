@@ -327,4 +327,64 @@ describe("GRPC Test", () => {
       await server.stop();
     }
   });
+
+  it("should propagate the tracing header directly if the host is not in managed host", async () => {
+    const CLIENT_TRACE_ID = `client-id-${Math.floor(Math.random() * 65536)}`;
+    let requestId: string | undefined;
+    let traceId: string | undefined;
+    let spanId: string | undefined;
+
+    const server = new class extends GrpcTestServer {
+      constructor() {
+        super(5, true);
+      }
+
+      async wrapper(call: ServerUnaryCall): Promise<any> {
+        const init: EnvoyContextInit = {
+          meta: call.metadata
+        };
+        const innerClient = new PingEnvoyClient(
+          `${GrpcTestServer.bindHost}:${this.envoyIngressPort}`,
+          new EnvoyContext(init)
+        );
+        const ctx = innerClient.envoyContext;
+        expect(ctx.clientTraceId).toBe(CLIENT_TRACE_ID);
+        requestId = ctx.requestId;
+        traceId = ctx.traceId;
+        spanId = ctx.spanId;
+        return innerClient.inner({ message: call.request.message });
+      }
+
+      async inner(call: ServerUnaryCall): Promise<any> {
+        const ctx = new EnvoyContext(call.metadata);
+        expect(ctx.clientTraceId).toBe(CLIENT_TRACE_ID);
+        expect(ctx.requestId).toBe(requestId);
+        expect(ctx.traceId).toBe(traceId);
+        expect(ctx.spanId).toBe(spanId);
+        return { message: "pong" };
+      }
+    }();
+
+    await server.start();
+
+    try {
+      const clientMetadata = new grpc.Metadata();
+      clientMetadata.add("x-client-trace-id", CLIENT_TRACE_ID);
+      const client = new Ping(
+        `${GrpcTestServer.bindHost}:${server.envoyIngressPort}`,
+        grpc.credentials.createInsecure()
+      );
+      const response = await new Promise((resolve, reject) => {
+        client.wrapper({ message: "ping" }, clientMetadata, (err: ServiceError, response: any) => {
+          if (err) {
+            reject(err);
+            return;
+          }
+          resolve(response);
+        });
+      });
+    } finally {
+      await server.stop();
+    }
+  });
 });

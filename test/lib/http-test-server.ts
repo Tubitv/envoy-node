@@ -17,8 +17,8 @@ function stringifyError(err: Error) {
 export default abstract class HttpTestServer extends CommonTestServer {
   readonly server: Server;
 
-  constructor(serverId: number) {
-    super("./envoy-http-config.yaml", serverId);
+  constructor(serverId: number, useManagedHostHeader = false) {
+    super("./envoy-http-config.yaml", serverId, useManagedHostHeader);
     this.server = http.createServer(this.processRequest);
   }
 

@@ -22,6 +22,7 @@ listeners:
               value: "EGRESS_PORT"
             - key: x-tubi-envoy-egress-addr
               value: BIND_HOST
+            # MANAGED_HOST_REPLACEMENT
           filters:
             - name: router
               config:

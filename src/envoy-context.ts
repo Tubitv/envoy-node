@@ -43,6 +43,12 @@ export const X_TUBI_ENVOY_EGRESS_PORT = "x-tubi-envoy-egress-port";
 export const X_TUBI_ENVOY_EGRESS_ADDR = "x-tubi-envoy-egress-addr";
 
 /**
+ * the optional header set in envoy config for telling a host is managed by envoy
+ * so that this library can route envoy or call directly accordingly
+ */
+export const X_TUBI_ENVOY_MANAGED_HOST = "x-tubi-envoy-managed-host";
+
+/**
  * read value of the key from meata
  * return undefined if not found or empty
  * return first one if multiple values
@@ -57,6 +63,11 @@ export function readMetaAsStringOrUndefined(meta: Metadata, key: string) {
   return undefined;
 }
 
+function alwaysReturnArray(input: string | string[]) {
+  if (Array.isArray(input)) return input;
+  return [input];
+}
+
 /**
  * read value of the key from header
  * return undefined if not found or empty
@@ -69,10 +80,7 @@ export function readHeaderOrUndefined(header: HttpHeader, key: string) {
   if (!value) {
     return undefined;
   }
-  if (Array.isArray(value)) {
-    return value[0];
-  }
-  return value;
+  return alwaysReturnArray(value)[0];
 }
 
 /**
@@ -124,6 +132,17 @@ export interface EnvoyContextInit extends Object {
    * For easier migrate service to envoy step by step, we can route traffic to envoy for those service
    * migrated. Fill this set for the migrated service.
    * This field is default to `undefined` which means all traffic will be route to envoy.
+   * If this field is set to `undefined`, this library will also try to read it from `x-tubi-envoy-managed-host`.
+   * You can set in envoy config, like this:
+   *
+   * ```yaml
+   * request_headers_to_add:
+   * - key: x-tubi-envoy-managed-host
+   *   value: hostname:12345
+   * - key: x-tubi-envoy-managed-host
+   *   value: foo.bar:8080
+   * ```
+   *
    * If you set this to be an empty set, then no traffic will be route to envoy.
    */
   envoyManagedHosts?: Set<string>;
@@ -266,6 +285,17 @@ export default class EnvoyContext {
    * For easier migrate service to envoy step by step, we can route traffic to envoy for those service
    * migrated. Fill this set for the migrated service.
    * This field is default to `undefined` which means all traffic will be route to envoy.
+   * If this field is set to `undefined`, this library will also try to read it from `x-tubi-envoy-managed-host`.
+   * You can set in envoy config, like this:
+   *
+   * ```yaml
+   * request_headers_to_add:
+   * - key: x-tubi-envoy-managed-host
+   *   value: hostname:12345
+   * - key: x-tubi-envoy-managed-host
+   *   value: foo.bar:8080
+   * ```
+   *
    * If you set this to be an empty set, then no traffic will be route to envoy.
    */
   private readonly envoyManagedHosts?: Set<string>;
@@ -286,6 +316,7 @@ export default class EnvoyContext {
     let expectedRequestTimeoutString: string | undefined;
     let envoyEgressAddrFromHeader: string | undefined;
     let envoyEgressPortStringFromHeader: string | undefined;
+    let envoyManagedHostsFromHeader: string[] | undefined;
 
     if (meta instanceof Metadata) {
       const metadata: Metadata = meta;
@@ -306,6 +337,10 @@ export default class EnvoyContext {
         metadata,
         X_TUBI_ENVOY_EGRESS_PORT
       );
+      const managedHosts = metadata.get(X_TUBI_ENVOY_MANAGED_HOST);
+      if (managedHosts && managedHosts.length > 0) {
+        envoyManagedHostsFromHeader = managedHosts.map(v => v.toString());
+      }
     } else {
       const httpHeader: HttpHeader = meta;
       this.traceId = readHeaderOrUndefined(httpHeader, X_B3_TRACEID);
@@ -322,6 +357,10 @@ export default class EnvoyContext {
       );
       envoyEgressAddrFromHeader = readHeaderOrUndefined(httpHeader, X_TUBI_ENVOY_EGRESS_ADDR);
       envoyEgressPortStringFromHeader = readHeaderOrUndefined(httpHeader, X_TUBI_ENVOY_EGRESS_PORT);
+      const managedHosts = httpHeader[X_TUBI_ENVOY_MANAGED_HOST];
+      if (managedHosts) {
+        envoyManagedHostsFromHeader = alwaysReturnArray(managedHosts);
+      }
     }
 
     if (expectedRequestTimeoutString !== undefined && expectedRequestTimeoutString !== "") {
@@ -343,8 +382,10 @@ export default class EnvoyContext {
 
     if (this.directMode) {
       this.envoyManagedHosts = new Set<string>();
-    } else {
+    } else if (envoyManagedHosts !== undefined) {
       this.envoyManagedHosts = envoyManagedHosts;
+    } else if (envoyManagedHostsFromHeader !== undefined) {
+      this.envoyManagedHosts = new Set<string>(envoyManagedHostsFromHeader);
     }
   }
 
