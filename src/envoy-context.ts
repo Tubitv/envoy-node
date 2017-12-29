@@ -155,6 +155,26 @@ export interface EnvoyContextInit extends Object {
   directMode?: boolean;
 }
 
+/**
+ * some HTTP framework will do a tricky thing: the merge the headers into one string
+ * fixing it here
+ * @param hosts a list of array
+ */
+export function refineManagedHostArray(hosts: string[]) {
+  return hosts.reduce((acc: string[], host: string) => {
+    if (host.indexOf(",") >= 0) {
+      return acc.concat(
+        host
+          .split(",")
+          .map(value => value.trim())
+          .filter(value => value)
+      );
+    }
+    acc.push(host);
+    return acc;
+  }, []);
+}
+
 export function ensureItsEnvoyContextInit(
   param: Metadata | HttpHeader | EnvoyContextInit
 ): EnvoyContextInit {
@@ -385,7 +405,7 @@ export default class EnvoyContext {
     } else if (envoyManagedHosts !== undefined) {
       this.envoyManagedHosts = envoyManagedHosts;
     } else if (envoyManagedHostsFromHeader !== undefined) {
-      this.envoyManagedHosts = new Set<string>(envoyManagedHostsFromHeader);
+      this.envoyManagedHosts = new Set<string>(refineManagedHostArray(envoyManagedHostsFromHeader));
     }
   }
 
