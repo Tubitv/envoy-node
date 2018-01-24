@@ -3,27 +3,24 @@ import { parse as parseUrl } from "url";
 import { HttpHeader } from "./types";
 import EnvoyContext from "./envoy-context";
 import EnvoyHttpRequestParams, { EnvoyHttpRequestInit } from "./envoy-http-request-params";
-
-/**
- * this is the basic types of the init params of request library
- * only contains the fields we care about (we are going change)
- */
-export interface RequestParams {
-  url?: string;
-  headers?: HttpHeader;
-}
+import { Options, OptionsWithUrl, OptionsWithUri } from "request";
 
 /**
  * to easier migrate from http request using request library, you can use this function
  * to refine the request params directly
  * @param params request params, can be url string or params object
  * @param ctx the context, can be EnvoyContext, grpc.Metadata or HttpHeader
+ * @param init the extra options for the request
  */
 export default function envoyRequestParamsRefiner(
-  params: string | RequestParams,
-  ctx: EnvoyContext | Metadata | HttpHeader,
+  params: string | Options,
+  ctx?: EnvoyContext | Metadata | HttpHeader,
   init?: EnvoyHttpRequestInit
-): RequestParams {
+): Options {
+  if (!ctx) {
+    return typeof params === "string" ? { url: params } : params;
+  }
+
   let envoyContext: EnvoyContext;
   if (ctx instanceof EnvoyContext) {
     envoyContext = ctx;
@@ -33,41 +30,53 @@ export default function envoyRequestParamsRefiner(
 
   const envoyParams = new EnvoyHttpRequestParams(envoyContext, init);
 
-  const refinedParams: RequestParams = {};
+  let refinedParams: Options;
   if (typeof params === "string") {
-    Object.assign(refinedParams, { url: params });
+    refinedParams = { url: params };
   } else {
-    Object.assign(refinedParams, params);
+    refinedParams = { ...params };
   }
 
-  if (!refinedParams.url) {
+  const refinedParamsWithUrl = refinedParams as OptionsWithUrl;
+  const refinedParamsWithUri = refinedParams as OptionsWithUri;
+  if (Object.prototype.hasOwnProperty.call(refinedParams, "url")) {
+    refinedParamsWithUri.uri = refinedParamsWithUrl.url;
+    delete refinedParamsWithUrl.url;
+  }
+
+  if (!refinedParamsWithUri.uri) {
     throw new Error("Cannot read url from params");
   }
 
-  const { protocol, host, path } = parseUrl(refinedParams.url);
+  if (typeof refinedParamsWithUri.uri === "string") {
+    refinedParamsWithUri.uri = parseUrl(refinedParamsWithUri.uri);
+  }
+
+  const { protocol, host, path } = refinedParamsWithUri.uri;
   if (!protocol || !host || !path) {
     throw new Error("Cannot read the URL for envoy to fetch");
   }
 
   const callDirectly = envoyParams.context.shouldCallWithoutEnvoy(host);
 
-  if (protocol !== "http:" && !callDirectly) {
-    throw new Error(
-      `envoy request is designed only for http for now, current found: ${refinedParams.url}`
-    );
+  if (protocol !== "http:") {
+    throw new Error(`envoy request is designed only for http for now, current found: ${protocol}`);
   }
 
   const oldHeaders: HttpHeader = {};
-  Object.assign(oldHeaders, refinedParams.headers);
+  Object.assign(oldHeaders, refinedParamsWithUri.headers);
 
-  refinedParams.headers = {
+  refinedParamsWithUri.headers = {
     ...oldHeaders,
     ...envoyParams.assembleRequestHeaders(),
     host
   };
-  refinedParams.url = callDirectly
-    ? refinedParams.url
-    : `http://${envoyParams.context.envoyEgressAddr}:${envoyParams.context.envoyEgressPort}${path}`;
+
+  if (!callDirectly) {
+    refinedParamsWithUri.uri = `http://${envoyParams.context.envoyEgressAddr}:${
+      envoyParams.context.envoyEgressPort
+    }${path}`;
+  }
 
   return refinedParams;
 }

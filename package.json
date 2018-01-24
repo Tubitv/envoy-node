@@ -82,6 +82,7 @@
     "@types/node": "^8.5.2",
     "@types/node-fetch": "^1.6.7",
     "@types/protobufjs": "^5.0.31",
+    "@types/request": "^2.0.13",
     "colors": "^1.1.2",
     "commitizen": "^2.9.6",
     "coveralls": "^3.0.0",
@@ -113,6 +114,7 @@
   },
   "dependencies": {
     "grpc": "^1.8.0",
+    "request": "^2.83.0",
     "node-fetch": "^1.7.3"
   }
 }

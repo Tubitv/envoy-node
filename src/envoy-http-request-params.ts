@@ -97,6 +97,7 @@ export default class EnvoyHttpRequestParams extends EnvoyRequestParams {
 
   /**
    * assemble the request headers for setting retry.
+   * TODO: in direct mode, we may need to modify the tracing headers
    */
   assembleRequestHeaders(): HttpHeader {
     const header: HttpHeader = {
