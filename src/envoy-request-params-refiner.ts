@@ -59,11 +59,6 @@ export default function envoyRequestParamsRefiner(
 
   const callDirectly = envoyParams.context.shouldCallWithoutEnvoy(host);
 
-  if (callDirectly) {
-    // TODO if call directly, we may need to modify the tracing headers as we have context now
-    return refinedParamsWithUri;
-  }
-
   if (protocol !== "http:") {
     throw new Error(`envoy request is designed only for http for now, current found: ${protocol}`);
   }
@@ -77,9 +72,11 @@ export default function envoyRequestParamsRefiner(
     host
   };
 
-  refinedParamsWithUri.uri = `http://${envoyParams.context.envoyEgressAddr}:${
-    envoyParams.context.envoyEgressPort
-  }${path}`;
+  if (!callDirectly) {
+    refinedParamsWithUri.uri = `http://${envoyParams.context.envoyEgressAddr}:${
+      envoyParams.context.envoyEgressPort
+    }${path}`;
+  }
 
   return refinedParams;
 }
