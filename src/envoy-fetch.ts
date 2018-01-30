@@ -41,8 +41,8 @@ export default async function envoyFetch(
 
   const callDirectly = envoyParams.context.shouldCallWithoutEnvoy(host);
 
-  if (protocol !== "http:" && !callDirectly) {
-    throw new Error(`envoy fetch is designed only for http for now, current found: ${url}`);
+  if (protocol !== "http:" && protocol !== "https:" && !callDirectly) {
+    throw new Error(`envoy fetch is designed only for http / https for now, current found: ${url}`);
   }
   const refinedInit: RequestInit = { ...init };
 

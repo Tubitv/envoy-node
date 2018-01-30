@@ -59,8 +59,8 @@ export default function envoyRequestParamsRefiner(
 
   const callDirectly = envoyParams.context.shouldCallWithoutEnvoy(host);
 
-  if (protocol !== "http:") {
-    throw new Error(`envoy request is designed only for http for now, current found: ${protocol}`);
+  if (protocol !== "http:" && protocol !== "https:") {
+    throw new Error(`envoy request is designed only for http / https for now, current found: ${protocol}`);
   }
 
   const oldHeaders: HttpHeader = {};

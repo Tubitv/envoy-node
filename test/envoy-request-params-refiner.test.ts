@@ -9,9 +9,6 @@ describe("Envoy request params refiner test", () => {
       envoyRequestParamsRefiner("invalid url", {});
     }).toThrow();
     expect(() => {
-      envoyRequestParamsRefiner("https://foo.bar/path", {});
-    }).toThrow();
-    expect(() => {
       envoyRequestParamsRefiner(
         {
           /* no url */
@@ -21,9 +18,6 @@ describe("Envoy request params refiner test", () => {
     }).toThrow();
     expect(() => {
       envoyRequestParamsRefiner({ url: "invalid url" }, {});
-    }).toThrow();
-    expect(() => {
-      envoyRequestParamsRefiner({ url: "https://foo.bar/path" }, new EnvoyContext({}));
     }).toThrow();
   });
 
