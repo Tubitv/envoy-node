@@ -22,9 +22,6 @@ describe("Envoy request params refiner test", () => {
     expect(() => {
       envoyRequestParamsRefiner({ url: "invalid url" }, {});
     }).toThrow();
-    expect(() => {
-      envoyRequestParamsRefiner({ url: "https://foo.bar/path" }, new EnvoyContext({}));
-    }).toThrow();
   });
 
   it("should refine the params (string url)", () => {
