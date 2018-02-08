@@ -53,13 +53,14 @@ export default abstract class CommonTestServer {
     if (this.useManagedHostHeader) {
       envoyConfig = envoyConfig.replace(
         /# MANAGED_HOST_REPLACEMENT/g,
-        `- { "key": "x-tubi-envoy-managed-host", "value": "${CommonTestServer.domainName}:${
+        `- header: { "key": "x-tubi-envoy-managed-host", "value": "${CommonTestServer.domainName}:${
           this.envoyIngressPort
         }" }`
       );
     }
     await writeFile(this.envoyConfigFileName, envoyConfig);
     this.envoy = spawn("envoy", [
+      "--v2-config-only",
       "-c",
       this.envoyConfigFileName,
       "--service-cluster",
@@ -86,8 +87,6 @@ export default abstract class CommonTestServer {
   async stop() {
     this.envoy.kill();
     this.zipkin.stop();
-    await unlink(this.envoyConfigFileName);
-    await unlink(`/tmp/envoy-test-${this.servicePort}.ingress.log`);
-    await unlink(`/tmp/envoy-test-${this.servicePort}.egress.log`);
+    // await unlink(this.envoyConfigFileName);
   }
 }
