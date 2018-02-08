@@ -19,6 +19,12 @@ describe("Envoy request params refiner test", () => {
     expect(() => {
       envoyRequestParamsRefiner({ url: "invalid url" }, {});
     }).toThrow();
+    expect(() => {
+      envoyRequestParamsRefiner("ftp://foo.bar/path", {});
+    }).toThrow();
+    expect(() => {
+      envoyRequestParamsRefiner({ url: "ftp://foo.bar/path" }, new EnvoyContext({}));
+    }).toThrow();
   });
 
   it("should refine the params (string url)", () => {
