@@ -4,41 +4,48 @@
 
 This is a boilerplate to help you adopt [Envoy](https://github.com/envoyproxy/envoy).
 
-There are multiple ways to config Envoy, one of the convenience way to mange different egress traffic is route the traffic by hostname (using [virtual hosts](https://www.envoyproxy.io/docs/envoy/v1.5.0/api-v1/route_config/vhost.html)). By doing so, you can use one egress port for all your egress dependencies:
+There are multiple ways to config Envoy, one of the convenience way to mange different egress traffic is route the traffic by hostname (using [virtual hosts](https://www.envoyproxy.io/docs/envoy/v1.5.0/api-v2/rds.proto.html#virtualhost)). By doing so, you can use one egress port for all your egress dependencies:
 
 ```yaml
-listener:
-- address: tcp://127.0.0.1:12345
-  filters:
-  - name: http_connection_manager
-    config:
-      codec_type: auto
-      use_remote_address: true
-      stat_prefix: my-service.egress
-      route_config:
-        virtual_hosts:
-        - name: foo_cluster
-          domains:
-          - foo.service:10080 # Do not miss the port number here
-          routes:
-          - prefix: /
-            cluster: foo_cluster
-        - name: bar_cluster
-          domains:
-          - bar.service:10081 # Do not miss the port number here
-          routes:
-          - prefix: /
-            cluster: bar_cluster
-      filters:
-      - name: router
+static_resources:
+  listeners:
+  - name: egress_listener
+    address:
+      socket_address: 
+        address: 0.0.0.0
+        port_value: 12345
+    filter_chains:
+    - filters:
+      - name: envoy.http_connection_manager
         config:
-          dynamic_stats: true
-      tracing:
-        operation_name: egress
-      access_log:
-      - path: /tmp/envoy.my-service.egress.log
-        filter:
-          type: not_healthcheck
+          codec_type: AUTO
+          use_remote_address: true
+          stat_prefix: http.test.egress
+          route_config:
+            name: egress_route_config
+            virtual_hosts:
+            - name: foo_service
+              domains:
+              - foo.service:8888  # Do not miss the port number here
+              routes:
+              - match:
+                  prefix: /
+                route:
+                  cluster: remote_foo_server
+            - name: bar_service
+              domains:
+              - bar.service:8888  # Do not miss the port number here
+              routes:
+              - match:
+                  prefix: /
+                route:
+                  cluster: remote_bar_server
+          http_filters:
+          - name: envoy.router
+            config:
+              dynamic_stats: true
+          tracing:
+            operation_name: EGRESS
 ```
 
 But it will bring you new problem, your code is becoming verbose:
@@ -49,14 +56,16 @@ But it will bring you new problem, your code is becoming verbose:
 
 And this library is going to help you deal with these things elegantly.
 
-First, let's tell the library where the egress port is binding. A recommended way is to set the information on the ingress header by [request_headers_to_add](https://www.envoyproxy.io/docs/envoy/v1.5.0/api-v1/route_config/route_config#config-http-conn-man-route-table-add-req-headers):
+First, let's tell the library where the egress port is binding. A recommended way is to set the information on the ingress header by [request_headers_to_add](https://www.envoyproxy.io/docs/envoy/v1.5.0/api-v2/rds.proto.html#envoy-api-field-routeconfiguration-request-headers-to-add):
 
 ```yaml
 request_headers_to_add:
-- key: x-tubi-envoy-egress-port
-  value: "12345"
-- key: x-tubi-envoy-egress-addr
-  value: 127.0.0.1
+- header:
+    key: x-tubi-envoy-egress-port
+    value: "12345"
+- header:
+    key: x-tubi-envoy-egress-addr
+    value: 127.0.0.1
 ```
 
 You can also set this by the constructor parameters of `EnvoyContext`.
