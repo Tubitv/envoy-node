@@ -1,105 +1,115 @@
-listeners:
-  # ingress
-  - address: tcp://BIND_HOST:INGRESS_PORT
-    filters:
-      - name: http_connection_manager
+static_resources:
+  listeners:
+  - name: ingress_listener
+    address:
+      socket_address: 
+        address: BIND_HOST
+        port_value: INGRESS_PORT
+    filter_chains:
+    - filters:
+      - name: envoy.http_connection_manager
         config:
-          codec_type: auto
+          codec_type: AUTO
+          use_remote_address: false
+          generate_request_id: true
           stat_prefix: grpc.test.ingress
           route_config:
+            name: ingress_route_config
             virtual_hosts:
             - name: local_test_server
               domains: ["*"]
               routes:
-              - prefix: /
-                headers:
-                - name: content-type
-                  value: application/grpc
-                cluster: local_test_server
-
+              - match:
+                  prefix: /
+                route:
+                  cluster: local_test_server
             request_headers_to_add:
-            - key: x-tubi-envoy-egress-port
-              value: "EGRESS_PORT"
-            - key: x-tubi-envoy-egress-addr
-              value: BIND_HOST
+            - header:
+                key: x-tubi-envoy-egress-port
+                value: "EGRESS_PORT"
+            - header:
+                key: x-tubi-envoy-egress-addr
+                value: BIND_HOST
             # MANAGED_HOST_REPLACEMENT
-          filters:
-            - name: router
-              config:
-                dynamic_stats: true
-          tracing:
-            operation_name: ingress
-          access_log:
-          - path: /tmp/envoy-test-SERVICE_PORT.ingress.log
-            filter:
-              type: not_healthcheck
-
-  - address: tcp://BIND_HOST:EGRESS_PORT
-    filters:
-      - name: http_connection_manager
-        config:
-          codec_type: auto
-          use_remote_address: true
-          stat_prefix: grpc.test.egress
-          route_config:
-            virtual_hosts:
-              - name: remote_test_server
-                domains:
-                - DOMAIN_NAME:INGRESS_PORT
-                routes:
-                - prefix: /
-                  headers:
-                  - name: content-type
-                    value: application/grpc
-                  cluster: remote_test_server
-          filters:
-          - name: router
+          http_filters:
+          - name: envoy.router
             config:
               dynamic_stats: true
           tracing:
-            operation_name: egress
-          access_log:
-          - path: /tmp/envoy-test-SERVICE_PORT.egress.log
-            filter:
-              type: not_healthcheck
+            operation_name: INGRESS
+
+  - name: egress_listener
+    address:
+      socket_address: 
+        address: BIND_HOST
+        port_value: EGRESS_PORT
+    filter_chains:
+    - filters:
+      - name: envoy.http_connection_manager
+        config:
+          codec_type: AUTO
+          use_remote_address: true
+          stat_prefix: grpc.test.egress
+          route_config:
+            name: egress_route_config
+            virtual_hosts:
+            - name: remote_test_server
+              domains:
+              - DOMAIN_NAME:INGRESS_PORT
+              routes:
+              - match:
+                  prefix: /
+                route:
+                  cluster: remote_test_server
+          http_filters:
+          - name: envoy.router
+            config:
+              dynamic_stats: true
+          tracing:
+            operation_name: EGRESS
+  clusters:
+  - name: local_test_server
+    http2_protocol_options: {}
+    type: STATIC
+    connect_timeout: 0.25s
+    lb_policy: ROUND_ROBIN
+    hosts:
+    - socket_address:
+        address: BIND_HOST
+        port_value: SERVICE_PORT
+
+  - name: remote_test_server
+    http2_protocol_options: {}
+    type: STATIC
+    connect_timeout: 0.25s
+    lb_policy: ROUND_ROBIN
+    hosts:
+    - socket_address:
+        address: BIND_HOST
+        port_value: INGRESS_PORT # route the traffic back
+
+  # zipkin
+  - name: zipkin
+    type: STATIC
+    connect_timeout: 0.25s
+    lb_policy: ROUND_ROBIN
+    hosts:
+    - socket_address:
+        address: BIND_HOST
+        port_value: ZIPKIN_PORT
 
 
 # Administration interface
 admin:
   access_log_path: /dev/null
-  address: tcp://0.0.0.0:ADMIN_PORT
-
-
-# Cluster manager
-cluster_manager:
-  clusters:
-  - name: local_test_server
-    type: static
-    connect_timeout_ms: 1000
-    lb_type: round_robin
-    features: http2
-    hosts:
-    - url: tcp://BIND_HOST:SERVICE_PORT
-
-  - name: remote_test_server
-    type: static
-    connect_timeout_ms: 1000
-    lb_type: round_robin
-    features: http2
-    hosts:
-    - url: tcp://BIND_HOST:INGRESS_PORT # route the traffic back
-
-  # zipkin
-  - name: zipkin
-    connect_timeout_ms: 1000
-    type: static
-    lb_type: round_robin
-    hosts:
-      - url: tcp://BIND_HOST:ZIPKIN_PORT
+  address:
+    socket_address:
+      address: 0.0.0.0
+      port_value: ADMIN_PORT
 
 tracing:
   http:
-    driver:
-      type: zipkin
-      config:
-        collector_cluster: zipkin
+    name: envoy.zipkin
+    config:
+      collector_cluster: zipkin
+      collector_endpoint: /api/v1/spans
