@@ -113,8 +113,9 @@
     "validate-commit-msg": "^2.14.0"
   },
   "dependencies": {
+    "async_hooks": "^1.0.0",
     "grpc": "^1.8.0",
-    "request": "^2.83.0",
-    "node-fetch": "^1.7.3"
+    "node-fetch": "^1.7.3",
+    "request": "^2.83.0"
   }
 }

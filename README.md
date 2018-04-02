@@ -256,6 +256,27 @@ client.pathToRpc(
 
 Check out the [detail document](https://tubitv.github.io/envoy-node/) if needed.
 
+## Context store
+
+Are you finding it's too painful for you to propagate the context information through function calls' parameter?
+
+If you are using Node.js V8, here is a solution for you:
+
+```javascript
+import { envoyContextStore } from "envoy-node"; // import the store
+
+envoyContextStore.enable(); // put this code when you application init
+
+// for each request, call this:
+  envoyContextStore.set(new EnvoyContext(req.headers));
+
+// for later get the request, simply:
+  envoyContextStore.get();
+```
+
+**IMPORTANT**: according to the implementation, it's strictly requiring the `set` method is called exactly once per request. Or you will get incorrect context. Please check the document for more details. (TBD: We are working on a blog post for the details.)
+
+
 ## For dev and test, or migrating to Envoy
 
 If you are developing the application, you may probably do not have Envoy running. You may want to call the service directly:
@@ -280,13 +301,13 @@ new EnvoyContext({
    * If this field is set to `undefined`, this library will also try to read it from `x-tubi-envoy-managed-host`.
    * You can set in envoy config, like this: 
    * 
-   * ```yaml
+   * ``yaml
    * request_headers_to_add:
    * - key: x-tubi-envoy-managed-host
    *   value: hostname:12345
    * - key: x-tubi-envoy-managed-host
    *   value: foo.bar:8080
-   * ```
+   * ``
    * 
    * If you set this to be an empty set, then no traffic will be route to envoy.
    */
