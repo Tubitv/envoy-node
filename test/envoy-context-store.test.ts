@@ -66,4 +66,9 @@ describe("Envoy context store", () => {
       expect(data.inputCtx).toBe(data.fromSetTimeout);
     });
   });
+
+  it("should throw error if store is not enabled", () => {
+    expect(() => store.set(new EnvoyContext({}))).toThrowError();
+    expect(() => store.get()).toThrowError();
+  });
 });
