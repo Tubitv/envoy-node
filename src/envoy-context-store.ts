@@ -31,6 +31,7 @@ class NodeInfo {
 }
 
 const store = new Map<number, NodeInfo>();
+let enabled = false;
 
 /**
  * clean up will decrease the reference count.
@@ -72,7 +73,12 @@ const asyncHook = asyncHooks.createHook({
  * i.e. put it in your application's start.
  */
 function enable() {
-  asyncHook.enable();
+  if (!enabled) {
+    asyncHook.enable();
+    enabled = true;
+  } else {
+    console.trace("[envoy-node] You want to enable the enabled store");
+  }
 }
 
 /**
@@ -81,8 +87,13 @@ function enable() {
  * This function is not intended to be call in the application life cycle.
  */
 function disable() {
-  asyncHook.disable();
-  store.clear();
+  if (enabled) {
+    asyncHook.disable();
+    store.clear();
+    enabled = false;
+  } else {
+    console.trace("[envoy-node] You want to disable the disabled store");
+  }
 }
 
 function markContext(triggerAsyncId: number, context: EnvoyContext) {
@@ -143,9 +154,14 @@ function get(): EnvoyContext | undefined {
   return getContext(asyncId);
 }
 
+function isEnabled() {
+  return enabled;
+}
+
 export default {
   enable,
   disable,
   set,
-  get
+  get,
+  isEnabled
 };
