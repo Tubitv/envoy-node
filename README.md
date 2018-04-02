@@ -236,7 +236,7 @@ envoyFetch(params, url, init /* init like original node-fetch */)
 const yourOldRequestParams = {}; /* url or options */
 request(envoyRequestParamsRefiner(yourOldRequestParams, context /* or headers, grpc.Metadata */ ))
 
-// for gRP
+// for gRPC
 const client = new Ping((
   `${context.envoyEgressAddr}:${context.envoyEgressPort}`, // envoy egress port
   grpc.credentials.createInsecure()
