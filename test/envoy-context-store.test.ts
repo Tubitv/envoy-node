@@ -27,8 +27,17 @@ async function mainExecute(data: Data) {
   data.fromAsync = store.get();
 }
 
-async function middleware(data: Data) {
+async function middlewareLogic0() {
+  // empty
+}
+
+async function middlewareLogic1(data: Data) {
   store.set(data.inputCtx);
+}
+
+async function middleware(data: Data) {
+  await middlewareLogic0();
+  await middlewareLogic1(data);
 }
 
 async function root(data: Data) {
@@ -38,14 +47,23 @@ async function root(data: Data) {
 
 describe("Envoy context store", () => {
   it("should works", async () => {
+    const testData = [1, 2, 3].map(idx => {
+      const data = new Data();
+      data.inputCtx = new EnvoyContext({
+        "x-request-id": `${idx}`
+      });
+      return data;
+    });
     store.enable();
-    const data = new Data();
-    data.inputCtx = new EnvoyContext({});
-    await root(data);
+    for (const data of testData) {
+      await root(data);
+    }
     await sleep(50);
     store.disable();
-    expect(data.inputCtx).toBe(data.fromAsync);
-    expect(data.inputCtx).toBe(data.fromPromise);
-    expect(data.inputCtx).toBe(data.fromSetTimeout);
+    testData.forEach(data => {
+      expect(data.inputCtx).toBe(data.fromAsync);
+      expect(data.inputCtx).toBe(data.fromPromise);
+      expect(data.inputCtx).toBe(data.fromSetTimeout);
+    });
   });
 });

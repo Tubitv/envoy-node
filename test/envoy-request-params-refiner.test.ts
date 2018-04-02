@@ -12,6 +12,7 @@ describe("Envoy request params refiner test", () => {
       envoyRequestParamsRefiner(
         {
           /* no url */
+          url: ""
         },
         {}
       );
