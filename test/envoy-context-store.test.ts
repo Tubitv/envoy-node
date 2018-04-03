@@ -55,6 +55,7 @@ describe("Envoy context store", () => {
       return data;
     });
     store.enable();
+    expect(store.isEnabled()).toBeTruthy();
     for (const data of testData) {
       await root(data);
     }
@@ -67,8 +68,32 @@ describe("Envoy context store", () => {
     });
   });
 
-  it("should throw error if store is not enabled", () => {
-    expect(() => store.set(new EnvoyContext({}))).toThrowError();
-    expect(() => store.get()).toThrowError();
+  it("should trace error when set context if store is not enabled", () => {
+    const originalTrace = console.trace;
+    console.trace = jest.fn();
+    store.set(new EnvoyContext({}));
+    expect(console.trace).toBeCalled();
+    console.trace = originalTrace;
+  });
+
+  it("should trace error when get context if store is not enabled", () => {
+    const originalTrace = console.trace;
+    console.trace = jest.fn();
+    expect(store.get()).toBeUndefined();
+    expect(console.trace).toBeCalled();
+    console.trace = originalTrace;
+  });
+
+  it("should trace error when enable / disable twice", () => {
+    const originalTrace = console.trace;
+    console.trace = jest.fn();
+    store.enable();
+    store.enable();
+    expect(console.trace).toBeCalled();
+    console.trace = jest.fn();
+    store.disable();
+    store.disable();
+    expect(console.trace).toBeCalled();
+    console.trace = originalTrace;
   });
 });

@@ -31,6 +31,7 @@ class NodeInfo {
 }
 
 const store = new Map<number, NodeInfo>();
+let enabled = false;
 
 /**
  * clean up will decrease the reference count.
@@ -72,7 +73,12 @@ const asyncHook = asyncHooks.createHook({
  * i.e. put it in your application's start.
  */
 function enable() {
-  asyncHook.enable();
+  if (!enabled) {
+    asyncHook.enable();
+    enabled = true;
+  } else {
+    console.trace("[envoy-node] You want to enable the enabled store");
+  }
 }
 
 /**
@@ -81,8 +87,13 @@ function enable() {
  * This function is not intended to be call in the application life cycle.
  */
 function disable() {
-  asyncHook.disable();
-  store.clear();
+  if (enabled) {
+    asyncHook.disable();
+    store.clear();
+    enabled = false;
+  } else {
+    console.trace("[envoy-node] You want to disable the disabled store");
+  }
 }
 
 function markContext(triggerAsyncId: number, context: EnvoyContext) {
@@ -108,9 +119,10 @@ function set(context: EnvoyContext) {
   const asyncId = asyncHooks.executionAsyncId();
   const info = store.get(asyncId);
   if (info === undefined) {
-    throw new Error(
-      "Cannot find info of current execution, have you enabled the context store correctly?"
+    console.trace(
+      "[envoy-node] Cannot find info of current execution, have you enabled the context store correctly?"
     );
+    return;
   }
   info.context = context;
   markContext(info.triggerAsyncId, context);
@@ -120,12 +132,13 @@ function set(context: EnvoyContext) {
  * get context from the execution tree
  * @param asyncId the async id
  */
-function getContext(asyncId: number): EnvoyContext {
+function getContext(asyncId: number): EnvoyContext | undefined {
   const info = store.get(asyncId);
   if (info === undefined) {
-    throw new Error(
-      "Cannot find info of current execution, have you enabled and set the context store correctly?"
+    console.trace(
+      "[envoy-node] Cannot find info of current execution, have you enabled and set the context store correctly?"
     );
+    return undefined;
   }
   if (!info.context) {
     info.context = getContext(info.triggerAsyncId);
@@ -136,14 +149,19 @@ function getContext(asyncId: number): EnvoyContext {
 /**
  * get the context previous set in the store of the current execution
  */
-function get(): EnvoyContext {
+function get(): EnvoyContext | undefined {
   const asyncId = asyncHooks.executionAsyncId();
   return getContext(asyncId);
+}
+
+function isEnabled() {
+  return enabled;
 }
 
 export default {
   enable,
   disable,
   set,
-  get
+  get,
+  isEnabled
 };
