@@ -116,6 +116,10 @@ function markContext(triggerAsyncId: number, context: EnvoyContext) {
  * @param context the context you want to set
  */
 function set(context: EnvoyContext) {
+  if (!enabled) {
+    console.trace("[envoy-node] cannot set context when store is not enabled.");
+    return;
+  }
   const asyncId = asyncHooks.executionAsyncId();
   const info = store.get(asyncId);
   if (info === undefined) {
@@ -134,12 +138,6 @@ function set(context: EnvoyContext) {
  */
 function getContext(asyncId: number): EnvoyContext | undefined {
   const info = store.get(asyncId);
-  if (info === undefined) {
-    console.trace(
-      "[envoy-node] Cannot find info of current execution, have you enabled and set the context store correctly?"
-    );
-    return undefined;
-  }
   if (!info.context) {
     info.context = getContext(info.triggerAsyncId);
   }
@@ -150,8 +148,18 @@ function getContext(asyncId: number): EnvoyContext | undefined {
  * get the context previous set in the store of the current execution
  */
 function get(): EnvoyContext | undefined {
+  if (!enabled) {
+    console.trace("[envoy-node] cannot get context when store is not enabled.");
+    return undefined;
+  }
   const asyncId = asyncHooks.executionAsyncId();
-  return getContext(asyncId);
+  const context = getContext(asyncId);
+  if (context === undefined) {
+    console.trace(
+      "[envoy-node] Cannot find info of current execution, have you enabled and set the context store correctly?"
+    );
+  }
+  return context;
 }
 
 function isEnabled() {
