@@ -258,6 +258,8 @@ Check out the [detail document](https://tubitv.github.io/envoy-node/) if needed.
 
 ## Context store
 
+> NOTE: experimental feature, still investigating if there is memory leak issue.
+
 Are you finding it's too painful for you to propagate the context information through function calls' parameter?
 
 If you are using Node.js V8, here is a solution for you:
