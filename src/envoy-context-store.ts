@@ -166,10 +166,15 @@ function isEnabled() {
   return enabled;
 }
 
+function getStore() {
+  return store;
+}
+
 export default {
   enable,
   disable,
   set,
   get,
-  isEnabled
+  isEnabled,
+  getStore
 };
