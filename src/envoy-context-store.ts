@@ -138,6 +138,9 @@ function set(context: EnvoyContext) {
  */
 function getContext(asyncId: number): EnvoyContext | undefined {
   const info = store.get(asyncId);
+  if (!info) {
+    return undefined;
+  }
   if (!info.context) {
     info.context = getContext(info.triggerAsyncId);
   }
