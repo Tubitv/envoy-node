@@ -4,7 +4,7 @@ import EnvoyContext from "./envoy-context";
 /**
  * this will store the information of a node
  */
-class NodeInfo {
+export class NodeInfo {
   /**
    * the reference count of this info,
    * init will be 1,
