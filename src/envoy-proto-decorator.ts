@@ -163,6 +163,7 @@ export default function envoyProtoDecorator<T extends EnvoyClient>(
     }
 
     const { originalName }: { originalName?: string } = method;
+    /* istanbul ignore next */
     if (originalName) {
       // should alway have
       prototype[originalName] = prototype[name];
