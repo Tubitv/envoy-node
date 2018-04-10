@@ -30,8 +30,109 @@ export class NodeInfo {
   }
 }
 
-const store = new Map<number, NodeInfo>();
+/**
+ * Eliminate Store
+ * using two map for context storage, to avoid holding too many data
+ * it will eliminate the old data
+ */
+export class EliminateStore {
+  private old = new Map<number, NodeInfo>();
+  private current = new Map<number, NodeInfo>();
+
+  private lastEliminateTime = Date.now();
+
+  /**
+   * get context
+   * @param asyncId asyncId
+   */
+  get(asyncId: number) {
+    const infoFromCurrent = this.current.get(asyncId);
+    if (infoFromCurrent !== undefined) {
+      return infoFromCurrent;
+    }
+    const infoFromOld = this.old.get(asyncId);
+    if (infoFromOld !== undefined) {
+      this.current.set(asyncId, infoFromOld);
+    }
+    return infoFromOld;
+  }
+
+  /**
+   * set context
+   * @param asyncId asyncId
+   * @param info context info
+   */
+  set(asyncId: number, info: NodeInfo) {
+    this.current.set(asyncId, info);
+  }
+
+  /**
+   * delete context
+   * @param asyncId asyncId
+   */
+  delete(asyncId: number) {
+    this.current.delete(asyncId);
+    this.old.delete(asyncId);
+  }
+
+  /**
+   * clear all data
+   */
+  clear() {
+    this.old.clear();
+    this.current.clear();
+  }
+
+  /**
+   * eliminate the old data
+   */
+  eliminate() {
+    this.old = this.current;
+    this.current = new Map<number, NodeInfo>();
+    this.lastEliminateTime = Date.now();
+  }
+
+  /**
+   * get last eliminate time
+   */
+  getLastEliminateTime() {
+    return this.lastEliminateTime;
+  }
+
+  /**
+   * the current size
+   */
+  size() {
+    return this.current.size;
+  }
+
+  /**
+   * the old store size
+   */
+  oldSize() {
+    return this.old.size;
+  }
+}
+
+const store = new EliminateStore();
 let enabled = false;
+let eliminateInterval = 300 * 1000; // 300s, 5 mins
+
+/**
+ * set the store's eliminate interval, context data older than this and not
+ * read will be eventually eliminated
+ * @param interval time in milliseconds
+ */
+function setEliminateInterval(interval: number) {
+  eliminateInterval = interval;
+}
+
+/**
+ * get eliminate interval
+ */
+function getEliminateInterval() {
+  return eliminateInterval;
+}
 
 /**
  * clean up will decrease the reference count.
@@ -53,6 +154,10 @@ function storeCleanUp(asyncId: number) {
 
 const asyncHook = asyncHooks.createHook({
   init(asyncId, type, triggerAsyncId, resource) {
+    /* istanbul ignore next */
+    if (Date.now() - store.getLastEliminateTime() > eliminateInterval) {
+      store.eliminate();
+    }
     let triggerInfo = store.get(triggerAsyncId);
     if (!triggerInfo) {
       triggerInfo = new NodeInfo(-1);
@@ -122,6 +227,7 @@ function set(context: EnvoyContext) {
   }
   const asyncId = asyncHooks.executionAsyncId();
   const info = store.get(asyncId);
+  /* istanbul ignore next */
   if (info === undefined) {
     console.trace(
       "[envoy-node] Cannot find info of current execution, have you enabled the context store correctly?"
@@ -138,6 +244,7 @@ function set(context: EnvoyContext) {
  */
 function getContext(asyncId: number): EnvoyContext | undefined {
   const info = store.get(asyncId);
+  /* istanbul ignore next */
   if (!info) {
     return undefined;
   }
@@ -157,6 +264,7 @@ function get(): EnvoyContext | undefined {
   }
   const asyncId = asyncHooks.executionAsyncId();
   const context = getContext(asyncId);
+  /* istanbul ignore next */
   if (context === undefined) {
     console.trace(
       "[envoy-node] Cannot find info of current execution, have you enabled and set the context store correctly?"
@@ -169,7 +277,7 @@ function isEnabled() {
   return enabled;
 }
 
-function getStore() {
+function getStoreImpl() {
   return store;
 }
 
@@ -179,5 +287,7 @@ export default {
   set,
   get,
   isEnabled,
-  getStore
+  getStoreImpl,
+  getEliminateInterval,
+  setEliminateInterval
 };

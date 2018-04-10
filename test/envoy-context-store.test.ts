@@ -1,5 +1,5 @@
 import EnvoyContext from "../src/envoy-context";
-import store from "../src/envoy-context-store";
+import store, { EliminateStore, NodeInfo } from "../src/envoy-context-store";
 import { sleep } from "./lib/utils";
 
 class Data {
@@ -66,6 +66,8 @@ describe("Envoy context store", () => {
       expect(data.inputCtx).toBe(data.fromPromise);
       expect(data.inputCtx).toBe(data.fromSetTimeout);
     });
+    expect(store.getStoreImpl().size()).toBe(0);
+    expect(store.getStoreImpl().oldSize()).toBe(0);
   });
 
   it("should trace error when set context if store is not enabled", () => {
@@ -95,5 +97,50 @@ describe("Envoy context store", () => {
     store.disable();
     expect(console.trace).toBeCalled();
     console.trace = originalTrace;
+  });
+
+  it("Eliminate Store should works", () => {
+    const es = new EliminateStore();
+    expect(es.get(1)).toBeUndefined();
+    expect(es.size()).toBe(0);
+    expect(es.oldSize()).toBe(0);
+
+    const info = new NodeInfo(1);
+    es.set(1, info);
+    expect(es.get(1)).toBe(info);
+    expect(es.size()).toBe(1);
+    expect(es.oldSize()).toBe(0);
+
+    const oldTime = es.getLastEliminateTime();
+    es.eliminate();
+    expect(es.size()).toBe(0);
+    expect(es.oldSize()).toBe(1);
+    expect(es.getLastEliminateTime()).toBeGreaterThan(oldTime);
+
+    const info2 = new NodeInfo(2);
+    es.set(2, info2);
+    expect(es.get(2)).toBe(info2);
+    expect(es.size()).toBe(1);
+    expect(es.oldSize()).toBe(1);
+
+    expect(es.get(1)).toBe(info);
+    expect(es.size()).toBe(2);
+    expect(es.oldSize()).toBe(1);
+
+    es.delete(1);
+    expect(es.size()).toBe(1);
+    expect(es.oldSize()).toBe(0);
+    expect(es.get(1)).toBeUndefined();
+    expect(es.get(2)).toBe(info2);
+
+    es.clear();
+    expect(es.size()).toBe(0);
+    expect(es.oldSize()).toBe(0);
+  });
+
+  it("should set eliminate interval works", () => {
+    expect(store.getEliminateInterval()).toBe(300 * 1000);
+    store.setEliminateInterval(1);
+    expect(store.getEliminateInterval()).toBe(1);
   });
 });
