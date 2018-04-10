@@ -136,6 +136,8 @@ describe("Envoy context store", () => {
     es.clear();
     expect(es.size()).toBe(0);
     expect(es.oldSize()).toBe(0);
+
+    expect(store.getDebugInfo()).toBeDefined();
   });
 
   it("should set eliminate interval works", () => {

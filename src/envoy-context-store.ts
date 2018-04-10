@@ -117,6 +117,7 @@ export class EliminateStore {
 const store = new EliminateStore();
 let enabled = false;
 let eliminateInterval = 300 * 1000; // 300s, 5 mins
+let notDestroyedHooks = 0;
 
 /**
  * set the store's eliminate interval, context data older than this and not
@@ -154,6 +155,7 @@ function storeCleanUp(asyncId: number) {
 
 const asyncHook = asyncHooks.createHook({
   init(asyncId, type, triggerAsyncId, resource) {
+    notDestroyedHooks++;
     /* istanbul ignore next */
     if (Date.now() - store.getLastEliminateTime() > eliminateInterval) {
       store.eliminate();
@@ -168,6 +170,7 @@ const asyncHook = asyncHooks.createHook({
     store.set(asyncId, info);
   },
   destroy(asyncId) {
+    notDestroyedHooks--;
     storeCleanUp(asyncId);
   }
 });
@@ -273,12 +276,25 @@ function get(): EnvoyContext | undefined {
   return context;
 }
 
+/**
+ * return if the store is enabled
+ */
 function isEnabled() {
   return enabled;
 }
 
+/**
+ * return the instance of the store
+ */
 function getStoreImpl() {
   return store;
+}
+
+/**
+ * return debug info about the store
+ */
+function getDebugInfo() {
+  return `current size: ${store.size()}, old size: ${store.oldSize()}, not destroyed hooks: ${notDestroyedHooks}`;
 }
 
 export default {
@@ -289,5 +305,6 @@ export default {
   isEnabled,
   getStoreImpl,
   getEliminateInterval,
-  setEliminateInterval
+  setEliminateInterval,
+  getDebugInfo
 };
