@@ -258,8 +258,6 @@ Check out the [detail document](https://tubitv.github.io/envoy-node/) if needed.
 
 ## Context store
 
-> NOTE: experimental feature, still investigating if there is memory leak issue.
-
 Are you finding it's too painful for you to propagate the context information through function calls' parameter?
 
 If you are using Node.js V8, here is a solution for you:
@@ -276,7 +274,10 @@ envoyContextStore.enable(); // put this code when you application init
   envoyContextStore.get();
 ```
 
-**IMPORTANT**: according to the implementation, it's strictly requiring the `set` method is called exactly once per request. Or you will get incorrect context. Please check the document for more details. (TBD: We are working on a blog post for the details.)
+**IMPORTANT**
+
+1. according to the implementation, it's strictly requiring the `set` method is called exactly once per request. Or you will get incorrect context. Please check the document for more details. (TBD: We are working on a blog post for the details.)
+2. according to `asyn_hooks` implementation, [`destroy` is not called if the code is using HTTP keep alive](https://github.com/nodejs/node/issues/19859). Please use `setEliminateInterval` to set a time for deleting old context data or you may have memory leak. The default (5 mintues) is using if you don't set it.
 
 
 ## For dev and test, or migrating to Envoy
