@@ -1,6 +1,14 @@
 #!/bin/bash
 
+SED_CMD="sed -i"
 
-sed -i '' 's/Message<any>/Message/g' node_modules/grpc/index.d.ts
+if [ "$(uname)" == "Darwin" ]; then
+    SED_CMD="$SED_CMD ''"
+fi
 
-sed -i '' 's/isWeakSet<T>/\/\/isWeakSet<T>/g' node_modules/@types/lodash/index.d.ts
+# this is to fix the typing errors of the grpc error
+$SED_CMD 's/Message<any>/Message/g' node_modules/grpc/index.d.ts
+
+
+# this should be fixed in the latest lodash, but grpc looks using an old one
+$SED_CMD 's/isWeakSet<T>/\/\/isWeakSet<T>/g' node_modules/@types/lodash/index.d.ts
