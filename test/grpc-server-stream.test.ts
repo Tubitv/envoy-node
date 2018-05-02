@@ -16,7 +16,7 @@ describe("GRPC server stream Test", () => {
         super(50);
       }
 
-      async wrapper(call: ServerUnaryCall): Promise<any> {
+      async wrapper(call: ServerUnaryCall<any>): Promise<any> {
         const innerClient = new PingEnvoyClient(
           `${GrpcTestServer.domainName}:${this.envoyIngressPort}`,
           new EnvoyContext(call.metadata)
@@ -45,7 +45,7 @@ describe("GRPC server stream Test", () => {
         return { message: "pong" };
       }
 
-      serverStream(call: ServerWriteableStream): void {
+      serverStream(call: ServerWriteableStream<any>): void {
         const ctx = new EnvoyContext(call.metadata);
         expect(ctx.clientTraceId).toBe(CLIENT_TRACE_ID);
         expect(ctx.requestId).toBe(requestId);

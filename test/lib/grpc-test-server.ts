@@ -32,8 +32,8 @@ export const { Ping } = testProto;
 // tslint:disable-next-line:variable-name
 export const PingEnvoyClient = envoyProtoDecorator<PingEnvoyClient>(Ping);
 
-function wrapImpl(func: (call: ServerUnaryCall) => Promise<any>) {
-  return (call: ServerUnaryCall, callback: sendUnaryData) => {
+function wrapImpl(func: (call: ServerUnaryCall<any>) => Promise<any>) {
+  return (call: ServerUnaryCall<any>, callback: sendUnaryData<any>) => {
     func(call)
       .then(result => {
         // tslint:disable-next-line:no-null-keyword
@@ -64,17 +64,17 @@ export default abstract class GrpcTestServer extends CommonTestServer {
     );
   }
 
-  async wrapper(call: ServerUnaryCall): Promise<any> {
+  async wrapper(call: ServerUnaryCall<any>): Promise<any> {
     console.log("client requested:", call.request);
     return { message: "pong" };
   }
 
-  async inner(call: ServerUnaryCall): Promise<any> {
+  async inner(call: ServerUnaryCall<any>): Promise<any> {
     console.log("client requested:", call.request);
     return { message: "pong" };
   }
 
-  clientStream(call: ServerReadableStream, callback: sendUnaryData): void {
+  clientStream(call: ServerReadableStream<any>, callback: sendUnaryData<any>): void {
     call.on("data", data => {
       console.log("got data from client:", data);
     });
@@ -87,7 +87,7 @@ export default abstract class GrpcTestServer extends CommonTestServer {
     });
   }
 
-  serverStream(call: ServerWriteableStream): void {
+  serverStream(call: ServerWriteableStream<any>): void {
     console.log("client requested:", call.request);
     call.write({ message: "server send a message" });
     call.on("end", () => {
@@ -95,7 +95,7 @@ export default abstract class GrpcTestServer extends CommonTestServer {
     });
   }
 
-  bidiStream(call: ServerDuplexStream): void {
+  bidiStream(call: ServerDuplexStream<any, any>): void {
     console.log("should have metadata?", call);
     call.write({ message: "server send a message" });
     call.on("data", data => {

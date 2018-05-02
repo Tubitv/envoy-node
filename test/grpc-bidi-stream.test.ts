@@ -17,7 +17,7 @@ describe("GRPC bidi stream Test", () => {
         super(30);
       }
 
-      async wrapper(call: ServerUnaryCall): Promise<any> {
+      async wrapper(call: ServerUnaryCall<any>): Promise<any> {
         const innerClient = new PingEnvoyClient(
           `${GrpcTestServer.domainName}:${this.envoyIngressPort}`,
           new EnvoyContext(call.metadata)
@@ -48,7 +48,7 @@ describe("GRPC bidi stream Test", () => {
         return { message: "pong" };
       }
 
-      bidiStream(call: ServerDuplexStream): void {
+      bidiStream(call: ServerDuplexStream<any, any>): void {
         const { metadata }: { metadata: grpc.Metadata } = call as any; // TODO gRPC library' typing is incorrect
         const ctx = new EnvoyContext(metadata);
         expect(ctx.clientTraceId).toBe(CLIENT_TRACE_ID);

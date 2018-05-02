@@ -59,10 +59,13 @@ export default async function envoyFetch(
     : `http://${envoyParams.context.envoyEgressAddr}:${envoyParams.context.envoyEgressPort}${path}`;
   const response = await fetch(actualUrl, refinedInit);
 
+  const upstreamTimeHeader = response.headers.get(X_ENVOY_UPSTREAM_SERVICE_TIME);
+  const upstreamServiceTime = upstreamTimeHeader === null ? NaN : parseInt(upstreamTimeHeader, 10);
+
   /* tslint:disable:prefer-object-spread */
   const envoyResponse: EnvoyResponse = Object.assign(response, {
     overloaded: response.headers.has(X_ENVOY_OVERLOADED),
-    upstreamServiceTime: parseInt(response.headers.get(X_ENVOY_UPSTREAM_SERVICE_TIME), 10)
+    upstreamServiceTime
   });
   /* tslint:enable:prefer-object-spread */
 

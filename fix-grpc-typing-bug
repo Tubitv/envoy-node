@@ -1,0 +1,6 @@
+#!/bin/bash
+
+
+sed -i '' 's/Message<any>/Message/g' node_modules/grpc/index.d.ts
+
+sed -i '' 's/isWeakSet<T>/\/\/isWeakSet<T>/g' node_modules/@types/lodash/index.d.ts

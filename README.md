@@ -336,7 +336,7 @@ For developing or running test of this library, you probably need to:
   ```
 2. there is a bug in gRPC's typing, run the following to fix it:
   ```shell
-  $ npm run fix-grpc-typing-bug
+  $ ./fix-grpc-typing-bug
   ```
 3. to commit your code change:
   ```shell

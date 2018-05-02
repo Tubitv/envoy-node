@@ -32,16 +32,16 @@ export interface ClientConstructor {
 export type RequestFunc = (request: any, options?: EnvoyGrpcRequestInit) => Promise<any>;
 
 export type ClientStreamFunc = (
-  callback: requestCallback,
+  callback: requestCallback<any>,
   options?: EnvoyGrpcRequestInit
-) => ClientWritableStream;
+) => ClientWritableStream<any>;
 
 export type ServerStreamFunc = (
   request: any,
   options?: EnvoyGrpcRequestInit
-) => ClientReadableStream;
+) => ClientReadableStream<any>;
 
-export type BidiStreamFunc = (options?: EnvoyGrpcRequestInit) => ClientDuplexStream;
+export type BidiStreamFunc = (options?: EnvoyGrpcRequestInit) => ClientDuplexStream<any, any>;
 
 export interface EnvoyClientFuncEnabled {
   /**
