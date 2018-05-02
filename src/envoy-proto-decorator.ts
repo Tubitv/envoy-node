@@ -55,9 +55,9 @@ function makeAsyncFunc(name: string): RequestFunc {
 function wrapClientStreamFunc(name: string) {
   return function(
     this: EnvoyClient,
-    callback: requestCallback,
+    callback: requestCallback<any>,
     options?: EnvoyGrpcRequestInit
-  ): ClientWritableStream {
+  ): ClientWritableStream<any> {
     const params = new EnvoyGrpcRequestParams(this.envoyContext, options);
     return Object.getPrototypeOf(Object.getPrototypeOf(this))[name].call(
       this,
@@ -79,7 +79,7 @@ function wrapServerStream(name: string) {
     this: EnvoyClient,
     request: any,
     options?: EnvoyGrpcRequestInit
-  ): ClientReadableStream {
+  ): ClientReadableStream<any> {
     const params = new EnvoyGrpcRequestParams(this.envoyContext, options);
     return Object.getPrototypeOf(Object.getPrototypeOf(this))[name].call(
       this,
@@ -97,7 +97,7 @@ function wrapServerStream(name: string) {
  * @param name the func name
  */
 function wrapBidiStream(name: string) {
-  return function(this: EnvoyClient, options?: EnvoyGrpcRequestInit): ClientDuplexStream {
+  return function(this: EnvoyClient, options?: EnvoyGrpcRequestInit): ClientDuplexStream<any, any> {
     const params = new EnvoyGrpcRequestParams(this.envoyContext, options);
     return Object.getPrototypeOf(Object.getPrototypeOf(this))[name].call(
       this,
@@ -123,7 +123,7 @@ export default function envoyProtoDecorator<T extends EnvoyClient>(
   constructor: ClientConstructor
 ): EnvoyClientConstructor<T> {
   const constructorAlias: any = constructor;
-  const { service }: { service: ServiceDefinition } = constructorAlias;
+  const { service }: { service: ServiceDefinition<any> } = constructorAlias;
   const clazz = class extends constructor implements EnvoyClient {
     readonly originalAddress: string;
     readonly envoyContext: EnvoyContext;

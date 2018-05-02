@@ -33,7 +33,6 @@
     "semantic-release": "semantic-release",
     "semantic-release-prepare": "ts-node tools/semantic-release-prepare",
     "precommit": "lint-staged",
-    "fix-grpc-typing-bug": "sed -i 's/Message<any>/Message/g' node_modules/grpc/index.d.ts",
     "prepush": "npm run test:prod && npm run build",
     "commitmsg": "validate-commit-msg"
   },

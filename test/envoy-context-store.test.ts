@@ -3,10 +3,10 @@ import store, { EliminateStore, NodeInfo } from "../src/envoy-context-store";
 import { sleep } from "./lib/utils";
 
 class Data {
-  inputCtx: EnvoyContext;
-  fromSetTimeout: EnvoyContext;
-  fromPromise: EnvoyContext;
-  fromAsync: EnvoyContext;
+  inputCtx?: EnvoyContext = undefined;
+  fromSetTimeout?: EnvoyContext = undefined;
+  fromPromise?: EnvoyContext = undefined;
+  fromAsync?: EnvoyContext = undefined;
 }
 
 function timeoutExec(data: Data) {
@@ -32,7 +32,9 @@ async function middlewareLogic0() {
 }
 
 async function middlewareLogic1(data: Data) {
-  store.set(data.inputCtx);
+  if (data.inputCtx) {
+    store.set(data.inputCtx);
+  }
 }
 
 async function middleware(data: Data) {

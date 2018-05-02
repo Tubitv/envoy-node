@@ -14,7 +14,7 @@ export default abstract class CommonTestServer {
   static bindHost = "127.0.0.1";
   static domainName = "ping.pong.test";
 
-  envoy: ChildProcess;
+  envoy?: ChildProcess = undefined;
   readonly zipkin: ZipkinMock;
   readonly servicePort: number;
   readonly envoyIngressPort: number;
@@ -85,7 +85,9 @@ export default abstract class CommonTestServer {
   }
 
   async stop() {
-    this.envoy.kill();
+    if (this.envoy) {
+      this.envoy.kill();
+    }
     this.zipkin.stop();
     await unlink(this.envoyConfigFileName);
   }
