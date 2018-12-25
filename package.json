@@ -74,7 +74,7 @@
       }
     },
     "collectCoverage": true,
-    "mapCoverage": true
+    "testEnvironment": "node"
   },
   "devDependencies": {
     "@types/jest": "^21.1.9",
