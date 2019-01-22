@@ -114,6 +114,9 @@ describe("Envoy context store", () => {
     expect(es.oldSize()).toBe(0);
 
     const oldTime = es.getLastEliminateTime();
+    for (let i = 0; i < 99999; i++) {
+      // delay
+    }
     es.eliminate();
     expect(es.size()).toBe(0);
     expect(es.oldSize()).toBe(1);

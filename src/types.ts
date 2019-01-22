@@ -5,7 +5,8 @@ import {
   requestCallback,
   ClientWritableStream,
   ClientReadableStream,
-  ClientDuplexStream
+  ClientDuplexStream,
+  Channel
 } from "grpc";
 import EnvoyContext from "./envoy-context";
 import { EnvoyGrpcRequestInit } from "./envoy-grpc-request-params";
@@ -20,9 +21,11 @@ export interface HttpHeader {
 /**
  * original constructor of gRPC
  */
-export interface ClientConstructor {
-  new (address: string, credentials: ChannelCredentials, options?: object): Client;
-}
+export type ClientConstructor = new (
+  address: string,
+  credentials: ChannelCredentials,
+  options?: object
+) => Client;
 
 /**
  * the API call
@@ -66,13 +69,18 @@ export interface EnvoyClient extends Client, EnvoyClientFuncEnabled {
 
 /**
  * the wrapped class generator of EnvoyClient
+ * create a new instance of Envoy client
+ * @param address the address of remote target server
+ * @param ctx the context, you can either tell me EnvoyContext, grpc.Metadata, or HttpHeader.
+ *  for the last two option, I will create EnvoyContext base of them.
  */
-export interface EnvoyClientConstructor<T extends EnvoyClient> {
-  /**
-   * create a new instance of Envoy client
-   * @param address the address of remote target server
-   * @param ctx the context, you can either tell me EnvoyContext, grpc.Metadata, or HttpHeader.
-   *  for the last two option, I will create EnvoyContext base of them.
-   */
-  new (address: string, ctx: EnvoyContext | Metadata | HttpHeader): T;
-}
+export type EnvoyClientConstructor<T extends EnvoyClient> = new (
+  address: string,
+  ctx: EnvoyContext | Metadata | HttpHeader
+) => T;
+
+export type ChannelFactoryOverride = (
+  target: string,
+  credentials: ChannelCredentials,
+  options: { [key: string]: string | number }
+) => Channel;

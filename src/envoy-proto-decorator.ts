@@ -16,7 +16,8 @@ import {
   ClientConstructor,
   EnvoyClientConstructor,
   EnvoyClientFuncEnabled,
-  HttpHeader
+  HttpHeader,
+  ChannelFactoryOverride
 } from "./types";
 
 /**
@@ -120,7 +121,8 @@ function wrapBidiStream(name: string) {
  * @param constructor Client constructor
  */
 export default function envoyProtoDecorator<T extends EnvoyClient>(
-  constructor: ClientConstructor
+  constructor: ClientConstructor,
+  channelFactoryOverride: ChannelFactoryOverride | undefined = undefined
 ): EnvoyClientConstructor<T> {
   const constructorAlias: any = constructor;
   const { service }: { service: ServiceDefinition<any> } = constructorAlias;
@@ -138,7 +140,7 @@ export default function envoyProtoDecorator<T extends EnvoyClient>(
       const actualAddr = envoyContext.shouldCallWithoutEnvoy(address)
         ? address
         : `${envoyContext.envoyEgressAddr}:${envoyContext.envoyEgressPort}`;
-      super(actualAddr, credentials.createInsecure());
+      super(actualAddr, credentials.createInsecure(), { channelFactoryOverride });
       this.originalAddress = address;
       this.envoyContext = envoyContext;
     }

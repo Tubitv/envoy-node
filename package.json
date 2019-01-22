@@ -1,6 +1,6 @@
 {
   "name": "envoy-node",
-  "version": "1.6.0-development",
+  "version": "1.9.0-development",
   "description": "",
   "keywords": [],
   "main": "dist/envoy-node.umd.js",
@@ -19,7 +19,7 @@
     "node": ">=6.0.0"
   },
   "scripts": {
-    "download-envoy": "if [ ! -f ./node_modules/.bin/envoy ]; then wget https://s3-us-west-1.amazonaws.com/tubi-public-binaries/envoy/v1.6.0/envoy -O node_modules/.bin/envoy && chmod +x node_modules/.bin/envoy; fi",
+    "download-envoy": "if [ ! -f ./node_modules/.bin/envoy ]; then wget https://s3-us-west-1.amazonaws.com/tubi-public-binaries/envoy/v1.9.0/envoy -O node_modules/.bin/envoy && chmod +x node_modules/.bin/envoy; fi",
     "lint": "tslint -t codeFrame 'src/**/*.ts' 'test/**/*.ts' 'types/**/*.ts'",
     "prebuild": "rimraf dist",
     "build": "tsc && tsc --module commonjs --outDir dist/lib && rollup -c rollup.config.ts && typedoc --out dist/docs --target es6 --theme minimal --mode file src",
@@ -74,9 +74,10 @@
       }
     },
     "collectCoverage": true,
-    "mapCoverage": true
+    "testEnvironment": "node"
   },
   "devDependencies": {
+    "@grpc/proto-loader": "^0.3.0",
     "@types/jest": "^21.1.9",
     "@types/node": "^8.5.2",
     "@types/node-fetch": "^1.6.7",
@@ -113,7 +114,7 @@
   },
   "dependencies": {
     "async_hooks": "^1.0.0",
-    "grpc": "^1.8.0",
+    "grpc": "^1.18.0",
     "node-fetch": "^1.7.3",
     "request": "^2.83.0"
   }

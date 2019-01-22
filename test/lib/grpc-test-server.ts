@@ -6,6 +6,7 @@ import grpc, {
   ServerWriteableStream,
   ServerDuplexStream
 } from "grpc";
+import * as protoLoader from "@grpc/proto-loader";
 import CommonTestServer from "./common-test-server";
 import envoyProtoDecorator from "../../src/envoy-proto-decorator";
 import {
@@ -18,7 +19,7 @@ import {
 } from "../../src/types";
 
 const PROTO_PATH = __dirname + "/ping.proto";
-const testProto: any = grpc.load(PROTO_PATH).test;
+const testProto: any = grpc.loadPackageDefinition(protoLoader.loadSync(PROTO_PATH)).test;
 
 export interface PingEnvoyClient extends EnvoyClient {
   inner: RequestFunc;
