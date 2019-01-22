@@ -5,7 +5,8 @@ import {
   requestCallback,
   ClientWritableStream,
   ClientReadableStream,
-  ClientDuplexStream
+  ClientDuplexStream,
+  Channel
 } from "grpc";
 import EnvoyContext from "./envoy-context";
 import { EnvoyGrpcRequestInit } from "./envoy-grpc-request-params";
@@ -77,3 +78,9 @@ export type EnvoyClientConstructor<T extends EnvoyClient> = new (
   address: string,
   ctx: EnvoyContext | Metadata | HttpHeader
 ) => T;
+
+export type ChannelFactoryOverride = (
+  target: string,
+  credentials: ChannelCredentials,
+  options: { [key: string]: string | number }
+) => Channel;
