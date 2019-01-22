@@ -87,7 +87,7 @@ describe("GRPC Test", () => {
           await innerClient.inner({ message: call.request.message }, { timeout: 10 });
           noException = true;
         } catch (e) {
-          expect(e.message).toBe("1 CANCELLED: Received http2 header with status: 504");
+          expect(e.message).toBe("14 UNAVAILABLE: upstream request timeout");
         }
 
         expect(noException).toBeFalsy();
@@ -222,7 +222,7 @@ describe("GRPC Test", () => {
           );
         } catch (e) {
           errorHappened = true;
-          expect(e.message).toBe("1 CANCELLED: Received http2 header with status: 504");
+          expect(e.message).toBe("14 UNAVAILABLE: upstream request timeout");
         }
         expect(errorHappened).toBeTruthy();
         expect(innerCalledCount).toBe(2);
