@@ -226,6 +226,7 @@ describe("GRPC Test", () => {
         }
         expect(errorHappened).toBeTruthy();
         expect(innerCalledCount).toBe(2);
+        return { message: "" };
       }
 
       async inner(call: ServerUnaryCall<any>): Promise<any> {
