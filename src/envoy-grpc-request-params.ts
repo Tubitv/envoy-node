@@ -1,4 +1,4 @@
-import grpc from "grpc";
+import { Metadata } from "grpc";
 
 import EnvoyRequestParams, {
   X_ENVOY_MAX_RETRIES,
@@ -54,7 +54,7 @@ export interface EnvoyGrpcRequestInit {
  * @internal
  */
 export function httpHeader2Metadata(httpHeader: HttpHeader) {
-  const metadata = new grpc.Metadata();
+  const metadata = new Metadata();
   for (const [key, value] of Object.entries(httpHeader)) {
     if (Array.isArray(value)) {
       value.forEach(v => metadata.add(key, v));
@@ -97,7 +97,7 @@ export default class EnvoyGrpcRequestParams extends EnvoyRequestParams {
   /**
    * assemble the request headers for setting retry.
    */
-  assembleRequestMeta(): grpc.Metadata {
+  assembleRequestMeta(): Metadata {
     const metadata = httpHeader2Metadata({
       ...this.context.assembleTracingHeader(),
       ...this.customHeaders
