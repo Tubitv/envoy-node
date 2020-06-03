@@ -1,4 +1,6 @@
-import grpc, { ServerUnaryCall, sendUnaryData, ServiceError } from "grpc";
+import * as grpc from "grpc";
+// tslint:disable-next-line:no-duplicate-imports
+import { ServerUnaryCall, sendUnaryData, ServiceError } from "grpc";
 import { sleep } from "./lib/utils";
 import GrpcTestServer, { Ping, PingEnvoyClient } from "./lib/grpc-test-server";
 import { RequestFunc, EnvoyClient } from "../src/types";
@@ -12,7 +14,7 @@ describe("GRPC Test", () => {
     let traceId: string | undefined;
     let innerParentId: string | undefined;
 
-    const server = new class extends GrpcTestServer {
+    const server = new (class extends GrpcTestServer {
       constructor() {
         super(0);
       }
@@ -38,7 +40,7 @@ describe("GRPC Test", () => {
         expect(ctx.parentSpanId).toBe(innerParentId);
         return { message: "pong" };
       }
-    }();
+    })();
 
     await server.start();
 
@@ -68,7 +70,7 @@ describe("GRPC Test", () => {
     const WRAPPER_SLEEP_TIME = 100;
     let innerCalledCount = 0;
 
-    const server = new class extends GrpcTestServer {
+    const server = new (class extends GrpcTestServer {
       constructor() {
         super(1);
       }
@@ -107,7 +109,7 @@ describe("GRPC Test", () => {
         }
         return { message: "pong" };
       }
-    }();
+    })();
 
     await server.start();
 
@@ -136,7 +138,7 @@ describe("GRPC Test", () => {
     const CLIENT_TRACE_ID = `client-id-${Math.floor(Math.random() * 65536)}`;
     let innerCalledCount = 0;
 
-    const server = new class extends GrpcTestServer {
+    const server = new (class extends GrpcTestServer {
       constructor() {
         super(2);
       }
@@ -151,7 +153,7 @@ describe("GRPC Test", () => {
           { message: call.request.message },
           {
             maxRetries: 2,
-            retryOn: [GrpcRetryOn.DEADLINE_EXCEEDED]
+            retryOn: [GrpcRetryOn.DEADLINE_EXCEEDED],
           }
         );
       }
@@ -167,7 +169,7 @@ describe("GRPC Test", () => {
         }
         return { message: `pong ${innerCalledCount}` };
       }
-    }();
+    })();
 
     await server.start();
 
@@ -198,7 +200,7 @@ describe("GRPC Test", () => {
     const CLIENT_TRACE_ID = `client-id-${Math.floor(Math.random() * 65536)}`;
     let innerCalledCount = 0;
 
-    const server = new class extends GrpcTestServer {
+    const server = new (class extends GrpcTestServer {
       constructor() {
         super(3);
       }
@@ -217,7 +219,7 @@ describe("GRPC Test", () => {
             {
               maxRetries: 3,
               retryOn: [GrpcRetryOn.DEADLINE_EXCEEDED],
-              perTryTimeout: 100
+              perTryTimeout: 100,
             }
           );
         } catch (e) {
@@ -243,7 +245,7 @@ describe("GRPC Test", () => {
         }
         return { message: `pong ${innerCalledCount}` };
       }
-    }();
+    })();
 
     await server.start();
 
@@ -274,7 +276,7 @@ describe("GRPC Test", () => {
     let traceId: string | undefined;
     let spanId: string | undefined;
 
-    const server = new class extends GrpcTestServer {
+    const server = new (class extends GrpcTestServer {
       constructor() {
         super(4);
       }
@@ -282,7 +284,7 @@ describe("GRPC Test", () => {
       async wrapper(call: ServerUnaryCall<any>): Promise<any> {
         const init: EnvoyContextInit = {
           meta: call.metadata,
-          directMode: true
+          directMode: true,
         };
         const innerClient = new PingEnvoyClient(
           `${GrpcTestServer.bindHost}:${this.envoyIngressPort}`,
@@ -304,7 +306,7 @@ describe("GRPC Test", () => {
         expect(ctx.spanId).toBe(spanId);
         return { message: "pong" };
       }
-    }();
+    })();
 
     await server.start();
 
@@ -335,14 +337,14 @@ describe("GRPC Test", () => {
     let traceId: string | undefined;
     let spanId: string | undefined;
 
-    const server = new class extends GrpcTestServer {
+    const server = new (class extends GrpcTestServer {
       constructor() {
         super(5, true);
       }
 
       async wrapper(call: ServerUnaryCall<any>): Promise<any> {
         const init: EnvoyContextInit = {
-          meta: call.metadata
+          meta: call.metadata,
         };
         const innerClient = new PingEnvoyClient(
           `${GrpcTestServer.bindHost}:${this.envoyIngressPort}`,
@@ -364,7 +366,7 @@ describe("GRPC Test", () => {
         expect(ctx.spanId).toBe(spanId);
         return { message: "pong" };
       }
-    }();
+    })();
 
     await server.start();
 

@@ -1,10 +1,12 @@
-import grpc, {
+import * as grpc from "grpc";
+// tslint:disable-next-line:no-duplicate-imports
+import {
   ServerUnaryCall,
   sendUnaryData,
   ServiceError,
   ServerReadableStream,
   ServerWriteableStream,
-  ServerDuplexStream
+  ServerDuplexStream,
 } from "grpc";
 import * as protoLoader from "@grpc/proto-loader";
 import CommonTestServer from "./common-test-server";
@@ -15,7 +17,7 @@ import {
   EnvoyClient,
   ClientStreamFunc,
   ServerStreamFunc,
-  BidiStreamFunc
+  BidiStreamFunc,
 } from "../../src/types";
 
 const PROTO_PATH = __dirname + "/ping.proto";
@@ -36,11 +38,11 @@ export const PingEnvoyClient = envoyProtoDecorator<PingEnvoyClient>(Ping);
 function wrapImpl(func: (call: ServerUnaryCall<any>) => Promise<any>) {
   return (call: ServerUnaryCall<any>, callback: sendUnaryData<any>) => {
     func(call)
-      .then(result => {
+      .then((result) => {
         // tslint:disable-next-line:no-null-keyword
         callback(null, result);
       })
-      .catch(reason => {
+      .catch((reason) => {
         callback(reason, undefined);
       });
   };
@@ -57,7 +59,7 @@ export default abstract class GrpcTestServer extends CommonTestServer {
       inner: wrapImpl(this.inner.bind(this)),
       clientStream: this.clientStream.bind(this),
       serverStream: this.serverStream.bind(this),
-      bidiStream: this.bidiStream.bind(this)
+      bidiStream: this.bidiStream.bind(this),
     });
     this.server.bind(
       `${GrpcTestServer.bindHost}:${this.servicePort}`,
@@ -76,10 +78,10 @@ export default abstract class GrpcTestServer extends CommonTestServer {
   }
 
   clientStream(call: ServerReadableStream<any>, callback: sendUnaryData<any>): void {
-    call.on("data", data => {
+    call.on("data", (data) => {
       console.log("got data from client:", data);
     });
-    call.on("error", err => {
+    call.on("error", (err) => {
       callback(err, undefined);
     });
     call.on("end", () => {
@@ -99,7 +101,7 @@ export default abstract class GrpcTestServer extends CommonTestServer {
   bidiStream(call: ServerDuplexStream<any, any>): void {
     console.log("should have metadata?", call);
     call.write({ message: "server send a message" });
-    call.on("data", data => {
+    call.on("data", (data) => {
       //
     });
     call.on("end", () => {

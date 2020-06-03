@@ -1,5 +1,5 @@
-import fs from "fs";
-import util from "util";
+import * as fs from "fs";
+import * as util from "util";
 import { spawn, ChildProcess } from "child_process";
 import ZipkinMock from "./zipkin-mock";
 import { sleep } from "./utils";
@@ -53,27 +53,24 @@ export default abstract class CommonTestServer {
     if (this.useManagedHostHeader) {
       envoyConfig = envoyConfig.replace(
         /# MANAGED_HOST_REPLACEMENT/g,
-        `- header: { "key": "x-tubi-envoy-managed-host", "value": "${CommonTestServer.domainName}:${
-          this.envoyIngressPort
-        }" }`
+        `- header: { "key": "x-tubi-envoy-managed-host", "value": "${CommonTestServer.domainName}:${this.envoyIngressPort}" }`
       );
     }
     await writeFile(this.envoyConfigFileName, envoyConfig);
     this.envoy = spawn("envoy", [
-      "--v2-config-only",
       "-c",
       this.envoyConfigFileName,
       "--service-cluster",
-      "test-server"
+      "test-server",
     ]);
     this.zipkin.start();
-    this.envoy.stdout.on("data", data => {
+    this.envoy.stdout?.on("data", (data) => {
       this.envoyStdout += data;
     });
-    this.envoy.stderr.on("data", data => {
+    this.envoy.stderr?.on("data", (data) => {
       this.envoyStderr += data;
     });
-    this.envoy.once("exit", code => {
+    this.envoy.once("exit", (code) => {
       if (code) {
         console.log(`Envoy exited abnormal: ${code}`);
         console.log("stdout", this.envoyStdout);

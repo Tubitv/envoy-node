@@ -1,4 +1,4 @@
-import http from "http";
+import * as http from "http";
 import EnvoyHttpClient from "../src/envoy-http-client";
 import EnvoyContext, { EnvoyContextInit } from "../src/envoy-context";
 
@@ -41,7 +41,7 @@ describe("envoy http client status code test", () => {
     const client = new EnvoyHttpClient(
       new EnvoyContext({
         meta: {},
-        envoyEgressPort: testPort
+        envoyEgressPort: testPort,
       } as EnvoyContextInit)
     );
 
@@ -71,7 +71,7 @@ describe("envoy http client status code test", () => {
     const client = new EnvoyHttpClient(
       new EnvoyContext({
         meta: {},
-        envoyEgressPort: testPort
+        envoyEgressPort: testPort,
       } as EnvoyContextInit)
     );
 
@@ -97,7 +97,7 @@ describe("envoy http client status code test", () => {
     const client = new EnvoyHttpClient(
       new EnvoyContext({
         meta: {},
-        envoyEgressPort: testPort
+        envoyEgressPort: testPort,
       } as EnvoyContextInit)
     );
     const response = await client.get("http://foo/bar");
@@ -111,7 +111,7 @@ describe("envoy http client status code test", () => {
     const client = new EnvoyHttpClient(
       new EnvoyContext({
         meta: {},
-        envoyEgressPort: testPort
+        envoyEgressPort: testPort,
       } as EnvoyContextInit)
     );
 
@@ -139,7 +139,7 @@ describe("envoy http client status code test", () => {
     const client = new EnvoyHttpClient(
       new EnvoyContext({
         meta: {},
-        envoyEgressPort: testPort
+        envoyEgressPort: testPort,
       } as EnvoyContextInit)
     );
 
@@ -167,7 +167,7 @@ describe("envoy http client status code test", () => {
     const client = new EnvoyHttpClient(
       new EnvoyContext({
         meta: {},
-        envoyEgressPort: testPort
+        envoyEgressPort: testPort,
       } as EnvoyContextInit)
     );
 
