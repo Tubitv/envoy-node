@@ -1,4 +1,6 @@
-import http, { Server, IncomingMessage, ServerResponse } from "http";
+import * as http from "http";
+// tslint:disable-next-line:no-duplicate-imports
+import { Server, IncomingMessage, ServerResponse } from "http";
 import { APPLICATION_JSON } from "../../src/envoy-http-client";
 import CommonTestServer from "./common-test-server";
 
@@ -46,7 +48,7 @@ export default abstract class HttpTestServer extends CommonTestServer {
 
   private processRequest = (req: IncomingMessage, res: ServerResponse) => {
     let body = "";
-    req.on("data", chunk => (body += chunk));
+    req.on("data", (chunk) => (body += chunk));
     req.on("end", () => {
       res.setHeader("content-type", APPLICATION_JSON);
       if (req.method === "POST") {

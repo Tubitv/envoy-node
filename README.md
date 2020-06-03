@@ -4,7 +4,7 @@
 
 This is a boilerplate to help you adopt [Envoy](https://github.com/envoyproxy/envoy).
 
-There are multiple ways to config Envoy, one of the convenience way to mange different egress traffic is route the traffic by hostname (using [virtual hosts](https://www.envoyproxy.io/docs/envoy/v1.5.0/api-v2/rds.proto.html#virtualhost)). By doing so, you can use one egress port for all your egress dependencies:
+There are multiple ways to config Envoy, one of the convenience way to mange different egress traffic is route the traffic by hostname (using [virtual hosts](https://www.envoyproxy.io/docs/envoy/v1.13.1/api-v2/rds.proto.html#virtualhost)). By doing so, you can use one egress port for all your egress dependencies:
 
 ```yaml
 static_resources:
@@ -17,8 +17,10 @@ static_resources:
     filter_chains:
     - filters:
       - name: envoy.http_connection_manager
-        config:
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
           codec_type: AUTO
+          stat_prefix: ingress
           use_remote_address: true
           stat_prefix: http.test.egress
           route_config:
@@ -42,10 +44,9 @@ static_resources:
                   cluster: remote_bar_server
           http_filters:
           - name: envoy.router
-            config:
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
               dynamic_stats: true
-          tracing:
-            operation_name: EGRESS
 ```
 
 But it will bring you new problem, your code is becoming verbose:
@@ -334,16 +335,12 @@ For developing or running test of this library, you probably need to:
   $ npm run download-envoy
   $ export PATH=./node_modules/.bin/:$PATH
   ```
-2. there is a bug in gRPC's typing, run the following to fix it:
-  ```shell
-  $ ./fix-grpc-typing-bug
-  ```
-3. to commit your code change:
+2. to commit your code change:
   ```shell
   $ git add . # or the things you want to commit
   $ npm run commit # and answer the commit message accordingly
   ```
-4. for each commit, the CI will auto release base on commit messages, to allow keeping the version align with Envoy, let's use fix instead of feature unless we want to upgrade minor version.
+3. for each commit, the CI will auto release base on commit messages, to allow keeping the version align with Envoy, let's use fix instead of feature unless we want to upgrade minor version.
 
 ## License
 

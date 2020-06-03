@@ -1,4 +1,4 @@
-import asyncHooks from "async_hooks";
+import * as asyncHooks from "async_hooks";
 import EnvoyContext from "./envoy-context";
 
 /**
@@ -172,7 +172,7 @@ const asyncHook = asyncHooks.createHook({
   destroy(asyncId) {
     notDestroyedHooks--;
     storeCleanUp(asyncId);
-  }
+  },
 });
 
 /**
@@ -306,5 +306,5 @@ export default {
   getStoreImpl,
   getEliminateInterval,
   setEliminateInterval,
-  getDebugInfo
+  getDebugInfo,
 };

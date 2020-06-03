@@ -1,4 +1,6 @@
-import grpc, { ServerUnaryCall, sendUnaryData, ServiceError, ServerWriteableStream } from "grpc";
+import * as grpc from "grpc";
+// tslint:disable-next-line:no-duplicate-imports
+import { ServerUnaryCall, sendUnaryData, ServiceError, ServerWriteableStream } from "grpc";
 
 import GrpcTestServer, { Ping, PingEnvoyClient } from "./lib/grpc-test-server";
 import { RequestFunc, EnvoyClient } from "../src/types";
@@ -11,7 +13,7 @@ describe("GRPC server stream Test", () => {
     let traceId: string | undefined;
     let innerParentId: string | undefined;
 
-    const server = new class extends GrpcTestServer {
+    const server = new (class extends GrpcTestServer {
       constructor() {
         super(50);
       }
@@ -28,7 +30,7 @@ describe("GRPC server stream Test", () => {
         innerParentId = ctx.spanId;
         await new Promise((resolve, reject) => {
           const stream = innerClient.serverStream({ message: call.request.message });
-          stream.on("error", error => {
+          stream.on("error", (error) => {
             reject(error);
           });
           stream.on("data", (data: any) => {
@@ -55,7 +57,7 @@ describe("GRPC server stream Test", () => {
         call.write({ message: "pong" });
         call.end();
       }
-    }();
+    })();
 
     await server.start();
 

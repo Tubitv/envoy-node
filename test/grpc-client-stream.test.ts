@@ -1,4 +1,6 @@
-import grpc, { ServerUnaryCall, sendUnaryData, ServiceError, ServerReadableStream } from "grpc";
+import * as grpc from "grpc";
+// tslint:disable-next-line:no-duplicate-imports
+import { ServerUnaryCall, sendUnaryData, ServiceError, ServerReadableStream } from "grpc";
 
 import GrpcTestServer, { Ping, PingEnvoyClient } from "./lib/grpc-test-server";
 import { RequestFunc, EnvoyClient } from "../src/types";
@@ -11,7 +13,7 @@ describe("GRPC client stream Test", () => {
     let traceId: string | undefined;
     let innerParentId: string | undefined;
 
-    const server = new class extends GrpcTestServer {
+    const server = new (class extends GrpcTestServer {
       constructor() {
         super(40);
       }
@@ -49,7 +51,7 @@ describe("GRPC client stream Test", () => {
         call.on("data", (data: any) => {
           expect(data.message).toBe("ping");
         });
-        call.on("error", err => {
+        call.on("error", (err) => {
           callback(err, undefined);
         });
         call.on("end", () => {
@@ -57,7 +59,7 @@ describe("GRPC client stream Test", () => {
           callback(null, { message: "clientStream:pong" });
         });
       }
-    }();
+    })();
 
     await server.start();
 
@@ -88,7 +90,7 @@ describe("GRPC client stream Test", () => {
     const CLIENT_TRACE_ID = `client-id-${Math.floor(Math.random() * 65536)}`;
     let innerCalledCount = 0;
 
-    const server = new class extends GrpcTestServer {
+    const server = new (class extends GrpcTestServer {
       constructor() {
         super(41);
       }
@@ -110,7 +112,7 @@ describe("GRPC client stream Test", () => {
             },
             {
               maxRetries: 2,
-              retryOn: [GrpcRetryOn.DEADLINE_EXCEEDED]
+              retryOn: [GrpcRetryOn.DEADLINE_EXCEEDED],
             }
           );
           stream.write({ message: call.request.message });
@@ -132,7 +134,7 @@ describe("GRPC client stream Test", () => {
           callback(error, undefined);
           return;
         }
-        call.on("error", err => {
+        call.on("error", (err) => {
           callback(err, undefined);
         });
         call.on("end", () => {
@@ -140,7 +142,7 @@ describe("GRPC client stream Test", () => {
           callback(null, { message: "clientStream:pong" });
         });
       }
-    }();
+    })();
 
     await server.start();
 

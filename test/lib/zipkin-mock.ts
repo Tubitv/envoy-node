@@ -1,4 +1,6 @@
-import http, { Server, IncomingMessage, ServerResponse } from "http";
+import * as http from "http";
+// tslint:disable-next-line:no-duplicate-imports
+import { Server, IncomingMessage, ServerResponse } from "http";
 
 export default class ZipkinMock {
   readonly server: Server;
@@ -11,7 +13,7 @@ export default class ZipkinMock {
 
   private process_request(req: IncomingMessage, res: ServerResponse) {
     let body = "";
-    req.on("data", chunk => (body += chunk));
+    req.on("data", (chunk) => (body += chunk));
     req.on("close", () => {
       const json = JSON.parse(body);
       // tracing data is comming too late so omit the validation for now

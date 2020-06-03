@@ -1,4 +1,6 @@
-import grpc, { ServerUnaryCall, sendUnaryData, ServiceError, ServerDuplexStream } from "grpc";
+import * as grpc from "grpc";
+// tslint:disable-next-line:no-duplicate-imports
+import { ServerUnaryCall, sendUnaryData, ServiceError, ServerDuplexStream } from "grpc";
 
 import GrpcTestServer, { Ping, PingEnvoyClient } from "./lib/grpc-test-server";
 import { sleep } from "./lib/utils";
@@ -12,7 +14,7 @@ describe("GRPC bidi stream Test", () => {
     let traceId: string | undefined;
     let innerParentId: string | undefined;
 
-    const server = new class extends GrpcTestServer {
+    const server = new (class extends GrpcTestServer {
       constructor() {
         super(30);
       }
@@ -30,7 +32,7 @@ describe("GRPC bidi stream Test", () => {
         await new Promise((resolve, reject) => {
           const stream = innerClient.bidiStream();
           stream.write({ message: call.request.message });
-          stream.on("error", error => {
+          stream.on("error", (error) => {
             reject(error);
           });
           stream.on("data", (data: any) => {
@@ -63,7 +65,7 @@ describe("GRPC bidi stream Test", () => {
           call.end();
         });
       }
-    }();
+    })();
 
     await server.start();
 
