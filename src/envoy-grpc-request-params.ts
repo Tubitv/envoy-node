@@ -1,9 +1,9 @@
-import { Metadata } from "grpc";
+import { Metadata } from "@grpc/grpc-js";
 
 import EnvoyRequestParams, {
   X_ENVOY_MAX_RETRIES,
   X_ENVOY_UPSTREAM_RQ_TIMEOUT_MS,
-  X_ENVOY_UPSTREAM_RQ_PER_TRY_TIMEOUT_MS
+  X_ENVOY_UPSTREAM_RQ_PER_TRY_TIMEOUT_MS,
 } from "./envoy-request-params";
 import EnvoyContext from "./envoy-context";
 import { HttpHeader } from "./types";
@@ -34,7 +34,7 @@ export enum GrpcRetryOn {
    * Envoy will attempt a retry if the gRPC status code in the response headers is
    * “resource-exhausted” (8)
    */
-  RESOURCE_EXHAUSTED = "resource-exhausted"
+  RESOURCE_EXHAUSTED = "resource-exhausted",
 }
 
 /**
@@ -57,7 +57,7 @@ export function httpHeader2Metadata(httpHeader: HttpHeader) {
   const metadata = new Metadata();
   for (const [key, value] of Object.entries(httpHeader)) {
     if (Array.isArray(value)) {
-      value.forEach(v => metadata.add(key, v));
+      value.forEach((v) => metadata.add(key, v));
     } else {
       metadata.add(key, value);
     }
@@ -88,7 +88,7 @@ export default class EnvoyGrpcRequestParams extends EnvoyRequestParams {
       timeout: -1,
       perTryTimeout: -1,
       headers: {},
-      ...params
+      ...params,
     };
     super(context, maxRetries, timeout, perTryTimeout, headers);
     this.retryOn = retryOn;
@@ -100,7 +100,7 @@ export default class EnvoyGrpcRequestParams extends EnvoyRequestParams {
   assembleRequestMeta(): Metadata {
     const metadata = httpHeader2Metadata({
       ...this.context.assembleTracingHeader(),
-      ...this.customHeaders
+      ...this.customHeaders,
     });
 
     if (this.maxRetries >= 0) {

@@ -1,6 +1,6 @@
-import * as grpc from "grpc";
+import * as grpc from "@grpc/grpc-js";
 // tslint:disable-next-line:no-duplicate-imports
-import { ServerUnaryCall, sendUnaryData, ServiceError, ServerWriteableStream } from "grpc";
+import { ServerUnaryCall, sendUnaryData, ServiceError, ServerWriteableStream } from "@grpc/grpc-js";
 
 import GrpcTestServer, { Ping, PingEnvoyClient } from "./lib/grpc-test-server";
 import { RequestFunc, EnvoyClient } from "../src/types";

@@ -1,4 +1,4 @@
-import { Metadata } from "grpc";
+import { Metadata } from "@grpc/grpc-js";
 import { HttpHeader } from "./types";
 import EnvoyHttpRequestParams, { EnvoyHttpRequestInit } from "./envoy-http-request-params";
 import EnvoyContext from "./envoy-context";
@@ -76,8 +76,8 @@ export default class EnvoyHttpClient {
     const res = await envoyFetch(param, url, {
       method,
       headers: {
-        accept: APPLICATION_JSON
-      }
+        accept: APPLICATION_JSON,
+      },
     });
     return this.returnJsonOrError(res);
   }
@@ -114,9 +114,9 @@ export default class EnvoyHttpClient {
       headers: {
         "content-type": APPLICATION_JSON,
         // tslint:disable-next-line:object-literal-key-quotes
-        accept: APPLICATION_JSON
+        accept: APPLICATION_JSON,
       },
-      body: JSON.stringify(body)
+      body: JSON.stringify(body),
     });
     return this.returnJsonOrError(res);
   }

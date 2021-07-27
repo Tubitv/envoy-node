@@ -1,4 +1,4 @@
-import { Metadata } from "grpc";
+import { Metadata } from "@grpc/grpc-js";
 import { parse as parseUrl } from "url";
 import { HttpHeader } from "./types";
 import EnvoyContext from "./envoy-context";
@@ -60,7 +60,9 @@ export default function envoyRequestParamsRefiner(
   const callDirectly = envoyParams.context.shouldCallWithoutEnvoy(host);
 
   if (protocol !== "http:" && protocol !== "https:") {
-    throw new Error(`envoy request is designed only for http / https for now, current found: ${protocol}`);
+    throw new Error(
+      `envoy request is designed only for http / https for now, current found: ${protocol}`
+    );
   }
 
   const oldHeaders: HttpHeader = {};
@@ -69,13 +71,11 @@ export default function envoyRequestParamsRefiner(
   refinedParamsWithUri.headers = {
     ...oldHeaders,
     ...envoyParams.assembleRequestHeaders(),
-    host
+    host,
   };
 
   if (!callDirectly) {
-    refinedParamsWithUri.uri = `http://${envoyParams.context.envoyEgressAddr}:${
-      envoyParams.context.envoyEgressPort
-    }${path}`;
+    refinedParamsWithUri.uri = `http://${envoyParams.context.envoyEgressAddr}:${envoyParams.context.envoyEgressPort}${path}`;
   }
 
   return refinedParams;
