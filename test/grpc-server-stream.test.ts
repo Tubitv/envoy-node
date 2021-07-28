@@ -47,7 +47,7 @@ describe("GRPC server stream Test", () => {
         return { message: "pong" };
       }
 
-      serverStream(call: ServerWritableStream<any>): void {
+      serverStream(call: ServerWritableStream<any, any>): void {
         const ctx = new EnvoyContext(call.metadata);
         expect(ctx.clientTraceId).toBe(CLIENT_TRACE_ID);
         expect(ctx.requestId).toBe(requestId);

@@ -61,9 +61,12 @@ export default abstract class GrpcTestServer extends CommonTestServer {
       serverStream: this.serverStream.bind(this),
       bidiStream: this.bidiStream.bind(this),
     });
-    this.server.bind(
+    this.server.bindAsync(
       `${GrpcTestServer.bindHost}:${this.servicePort}`,
-      grpc.ServerCredentials.createInsecure()
+      grpc.ServerCredentials.createInsecure(),
+      () => {
+        console.log("server is up...");
+      }
     );
   }
 
