@@ -18,7 +18,7 @@ describe("GRPC server stream Test", () => {
         super(50);
       }
 
-      async wrapper(call: ServerUnaryCall<any>): Promise<any> {
+      async wrapper(call: ServerUnaryCall<any, any>): Promise<any> {
         const innerClient = new PingEnvoyClient(
           `${GrpcTestServer.domainName}:${this.envoyIngressPort}`,
           new EnvoyContext(call.metadata)

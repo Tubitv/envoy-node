@@ -35,8 +35,8 @@ export const { Ping } = testProto;
 // tslint:disable-next-line:variable-name
 export const PingEnvoyClient = envoyProtoDecorator<PingEnvoyClient>(Ping);
 
-function wrapImpl(func: (call: ServerUnaryCall<any>) => Promise<any>) {
-  return (call: ServerUnaryCall<any>, callback: sendUnaryData<any>) => {
+function wrapImpl(func: (call: ServerUnaryCall<any, any>) => Promise<any>) {
+  return (call: ServerUnaryCall<any, any>, callback: sendUnaryData<any>) => {
     func(call)
       .then((result) => {
         // tslint:disable-next-line:no-null-keyword
@@ -67,17 +67,17 @@ export default abstract class GrpcTestServer extends CommonTestServer {
     );
   }
 
-  async wrapper(call: ServerUnaryCall<any>): Promise<any> {
+  async wrapper(call: ServerUnaryCall<any, any>): Promise<any> {
     console.log("client requested:", call.request);
     return { message: "pong" };
   }
 
-  async inner(call: ServerUnaryCall<any>): Promise<any> {
+  async inner(call: ServerUnaryCall<any, any>): Promise<any> {
     console.log("client requested:", call.request);
     return { message: "pong" };
   }
 
-  clientStream(call: ServerReadableStream<any>, callback: sendUnaryData<any>): void {
+  clientStream(call: ServerReadableStream<any, any>, callback: sendUnaryData<any>): void {
     call.on("data", (data) => {
       console.log("got data from client:", data);
     });
