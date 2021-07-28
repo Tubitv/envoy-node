@@ -1,6 +1,6 @@
 import * as grpc from "@grpc/grpc-js";
 // tslint:disable-next-line:no-duplicate-imports
-import { ServerUnaryCall, sendUnaryData, ServiceError, ServerWriteableStream } from "@grpc/grpc-js";
+import { ServerUnaryCall, sendUnaryData, ServiceError, ServerWritableStream } from "@grpc/grpc-js";
 
 import GrpcTestServer, { Ping, PingEnvoyClient } from "./lib/grpc-test-server";
 import { RequestFunc, EnvoyClient } from "../src/types";
@@ -47,7 +47,7 @@ describe("GRPC server stream Test", () => {
         return { message: "pong" };
       }
 
-      serverStream(call: ServerWriteableStream<any>): void {
+      serverStream(call: ServerWritableStream<any>): void {
         const ctx = new EnvoyContext(call.metadata);
         expect(ctx.clientTraceId).toBe(CLIENT_TRACE_ID);
         expect(ctx.requestId).toBe(requestId);

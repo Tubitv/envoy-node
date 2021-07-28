@@ -5,7 +5,7 @@ import {
   sendUnaryData,
   ServiceError,
   ServerReadableStream,
-  ServerWriteableStream,
+  ServerWritableStream,
   ServerDuplexStream,
 } from "@grpc/grpc-js";
 import * as protoLoader from "@grpc/proto-loader";
@@ -90,7 +90,7 @@ export default abstract class GrpcTestServer extends CommonTestServer {
     });
   }
 
-  serverStream(call: ServerWriteableStream<any>): void {
+  serverStream(call: ServerWritableStream<any, any>): void {
     console.log("client requested:", call.request);
     call.write({ message: "server send a message" });
     call.on("end", () => {
