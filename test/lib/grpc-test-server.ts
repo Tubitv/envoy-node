@@ -65,7 +65,7 @@ export default abstract class GrpcTestServer extends CommonTestServer {
       `${GrpcTestServer.bindHost}:${this.servicePort}`,
       grpc.ServerCredentials.createInsecure(),
       () => {
-        console.log("server is up...");
+        this.server.start();
       }
     );
   }
