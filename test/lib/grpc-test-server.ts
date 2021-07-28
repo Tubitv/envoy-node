@@ -1,4 +1,4 @@
-import * as grpc from "grpc";
+import * as grpc from "@grpc/grpc-js";
 // tslint:disable-next-line:no-duplicate-imports
 import {
   ServerUnaryCall,
@@ -7,7 +7,7 @@ import {
   ServerReadableStream,
   ServerWriteableStream,
   ServerDuplexStream,
-} from "grpc";
+} from "@grpc/grpc-js";
 import * as protoLoader from "@grpc/proto-loader";
 import CommonTestServer from "./common-test-server";
 import envoyProtoDecorator from "../../src/envoy-proto-decorator";

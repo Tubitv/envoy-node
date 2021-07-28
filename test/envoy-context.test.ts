@@ -2,9 +2,9 @@ import EnvoyContext, {
   readMetaAsStringOrUndefined,
   readHeaderOrUndefined,
   assignHeader,
-  refineManagedHostArray
+  refineManagedHostArray,
 } from "../src/envoy-context";
-import { Metadata } from "grpc";
+import { Metadata } from "@grpc/grpc-js";
 import { HttpHeader } from "../src/types";
 
 describe("Envoy context test", () => {
@@ -19,7 +19,7 @@ describe("Envoy context test", () => {
   it("should return the header element if exist", () => {
     const header: HttpHeader = {
       key: "value",
-      doubleKey: ["value1", "value2"]
+      doubleKey: ["value1", "value2"],
     };
 
     expect(readHeaderOrUndefined(header, "key")).toBe("value");
@@ -59,7 +59,7 @@ describe("Envoy context test", () => {
     expect(refineManagedHostArray(["host:1234,foo:1234", "bar:1234"])).toEqual([
       "host:1234",
       "foo:1234",
-      "bar:1234"
+      "bar:1234",
     ]);
   });
 });

@@ -6,8 +6,8 @@ import {
   ClientWritableStream,
   ClientReadableStream,
   ClientDuplexStream,
-  Channel
-} from "grpc";
+  Channel,
+} from "@grpc/grpc-js";
 import EnvoyContext from "./envoy-context";
 import { EnvoyGrpcRequestInit } from "./envoy-grpc-request-params";
 

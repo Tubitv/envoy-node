@@ -1,5 +1,5 @@
 import { HttpHeader } from "./types";
-import { Metadata } from "grpc";
+import { Metadata } from "@grpc/grpc-js";
 import { isNumber } from "util";
 
 const ENVOY_DEFAULT_EGRESS_PORT = 12345;
@@ -166,8 +166,8 @@ export function refineManagedHostArray(hosts: string[]) {
       return acc.concat(
         host
           .split(",")
-          .map(value => value.trim())
-          .filter(value => value)
+          .map((value) => value.trim())
+          .filter((value) => value)
       );
     }
     acc.push(host);
@@ -181,7 +181,7 @@ export function ensureItsEnvoyContextInit(
   // test if this is a grpc.Metadata
   if (param instanceof Metadata) {
     return {
-      meta: param
+      meta: param,
     };
   }
 
@@ -189,7 +189,7 @@ export function ensureItsEnvoyContextInit(
   const asInit = param as EnvoyContextInit;
   if (!asInit.meta || typeof asInit.meta === "string" || Array.isArray(asInit.meta)) {
     return {
-      meta: param as HttpHeader
+      meta: param as HttpHeader,
     };
   }
 
@@ -330,7 +330,7 @@ export default class EnvoyContext {
       envoyEgressPort,
       envoyEgressAddr,
       envoyManagedHosts,
-      directMode
+      directMode,
     } = ensureItsEnvoyContextInit(options);
 
     let expectedRequestTimeoutString: string | undefined;
@@ -359,7 +359,7 @@ export default class EnvoyContext {
       );
       const managedHosts = metadata.get(X_TUBI_ENVOY_MANAGED_HOST);
       if (managedHosts && managedHosts.length > 0) {
-        envoyManagedHostsFromHeader = managedHosts.map(v => v.toString());
+        envoyManagedHostsFromHeader = managedHosts.map((v) => v.toString());
       }
     } else {
       const httpHeader: HttpHeader = meta;
