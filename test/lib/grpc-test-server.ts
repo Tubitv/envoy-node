@@ -61,13 +61,6 @@ export default abstract class GrpcTestServer extends CommonTestServer {
       serverStream: this.serverStream.bind(this),
       bidiStream: this.bidiStream.bind(this),
     });
-    this.server.bindAsync(
-      `${GrpcTestServer.bindHost}:${this.servicePort}`,
-      grpc.ServerCredentials.createInsecure(),
-      () => {
-        this.server.start();
-      }
-    );
   }
 
   async wrapper(call: ServerUnaryCall<any, any>): Promise<any> {
@@ -112,10 +105,20 @@ export default abstract class GrpcTestServer extends CommonTestServer {
     });
   }
 
-  async start() {
-    this.server.start();
-    // start server
-    await super.start();
+  async start(): Promise<undefined> {
+    return new Promise((resolve) => {
+      this.server.bindAsync(
+        `${GrpcTestServer.bindHost}:${this.servicePort}`,
+        grpc.ServerCredentials.createInsecure(),
+        async () => {
+          // start server
+          this.server.start();
+          await super.start();
+          // @ts-ignore
+          resolve();
+        }
+      );
+    });
   }
 
   async stop() {
