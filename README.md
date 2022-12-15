@@ -11,7 +11,7 @@ static_resources:
   listeners:
   - name: egress_listener
     address:
-      socket_address: 
+      socket_address:
         address: 0.0.0.0
         port_value: 12345
     filter_chains:
@@ -113,7 +113,7 @@ For gRPC, you can new the client like this:
 #### General RPC
 
 ```js
-const grpc = require("grpc");
+const grpc = require("@grpc/grpc-js");
 const { envoyProtoDecorator, GrpcRetryOn } = require("envoy-node");
 
 const PROTO_PATH = __dirname + "/ping.proto";
@@ -303,8 +303,8 @@ new EnvoyContext({
    * migrated. Fill this set for the migrated service.
    * This field is default to `undefined` which means all traffic will be route to envoy.
    * If this field is set to `undefined`, this library will also try to read it from `x-tubi-envoy-managed-host`.
-   * You can set in envoy config, like this: 
-   * 
+   * You can set in envoy config, like this:
+   *
    * ``yaml
    * request_headers_to_add:
    * - key: x-tubi-envoy-managed-host
@@ -312,7 +312,7 @@ new EnvoyContext({
    * - key: x-tubi-envoy-managed-host
    *   value: foo.bar:8080
    * ``
-   * 
+   *
    * If you set this to be an empty set, then no traffic will be route to envoy.
    */
   envoyManagedHosts: new Set(["some-hostname:8080"]);
