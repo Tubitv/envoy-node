@@ -13,13 +13,12 @@ describe("GRPC bidi stream Test", () => {
     let requestId: string | undefined;
     let traceId: string | undefined;
     let innerParentId: string | undefined;
-
     const server = new (class extends GrpcTestServer {
       constructor() {
-        super(30);
+        super(30, false);
       }
 
-      async wrapper(call: ServerUnaryCall<any>): Promise<any> {
+      async wrapper(call: ServerUnaryCall<any, any>): Promise<any> {
         const innerClient = new PingEnvoyClient(
           `${GrpcTestServer.domainName}:${this.envoyIngressPort}`,
           new EnvoyContext(call.metadata)
@@ -29,7 +28,7 @@ describe("GRPC bidi stream Test", () => {
         requestId = ctx.requestId;
         traceId = ctx.traceId;
         innerParentId = ctx.spanId;
-        await new Promise((resolve, reject) => {
+        await new Promise<void>((resolve, reject) => {
           const stream = innerClient.bidiStream();
           stream.write({ message: call.request.message });
           stream.on("error", (error) => {
@@ -67,27 +66,29 @@ describe("GRPC bidi stream Test", () => {
       }
     })();
 
-    await server.start();
+    server.bind(async () => {
+      await server.start();
 
-    try {
-      const clientMetadata = new grpc.Metadata();
-      clientMetadata.add("x-client-trace-id", CLIENT_TRACE_ID);
-      const client = new Ping(
-        `${GrpcTestServer.bindHost}:${server.envoyIngressPort}`,
-        grpc.credentials.createInsecure()
-      );
-      const response = await new Promise((resolve, reject) => {
-        client.wrapper({ message: "ping" }, clientMetadata, (err: ServiceError, response: any) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-          resolve(response);
+      try {
+        const clientMetadata = new grpc.Metadata();
+        clientMetadata.add("x-client-trace-id", CLIENT_TRACE_ID);
+        const client = new Ping(
+          `${GrpcTestServer.bindHost}:${server.envoyIngressPort}`,
+          grpc.credentials.createInsecure()
+        );
+        const response = await new Promise((resolve, reject) => {
+          client.wrapper({ message: "ping" }, clientMetadata, (err: ServiceError, response: any) => {
+            if (err) {
+              reject(err);
+              return;
+            }
+            resolve(response);
+          });
         });
-      });
-    } finally {
-      await server.stop();
-    }
+      } finally {
+        await server.stop();
+      }
+    });
   });
 
   // NOTE: Timeout is not testable, skip

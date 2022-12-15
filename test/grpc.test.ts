@@ -42,27 +42,29 @@ describe("GRPC Test", () => {
       }
     })();
 
-    await server.start();
+    server.bind(async () => {
+      await server.start();
 
-    try {
-      const clientMetadata = new grpc.Metadata();
-      clientMetadata.add("x-client-trace-id", CLIENT_TRACE_ID);
-      const client = new Ping(
-        `${GrpcTestServer.bindHost}:${server.envoyIngressPort}`,
-        grpc.credentials.createInsecure()
-      );
-      const response = await new Promise((resolve, reject) => {
-        client.wrapper({ message: "ping" }, clientMetadata, (err: ServiceError, response: any) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-          resolve(response);
+      try {
+        const clientMetadata = new grpc.Metadata();
+        clientMetadata.add("x-client-trace-id", CLIENT_TRACE_ID);
+        const client = new Ping(
+          `${GrpcTestServer.bindHost}:${server.envoyIngressPort}`,
+          grpc.credentials.createInsecure()
+        );
+        const response = await new Promise((resolve, reject) => {
+          client.wrapper({ message: "ping" }, clientMetadata, (err: ServiceError, response: any) => {
+            if (err) {
+              reject(err);
+              return;
+            }
+            resolve(response);
+          });
         });
-      });
-    } finally {
-      await server.stop();
-    }
+      } finally {
+        await server.stop();
+      }
+    });
   });
 
   it("should handle timeout correctly", async () => {
@@ -111,27 +113,29 @@ describe("GRPC Test", () => {
       }
     })();
 
-    await server.start();
+    server.bind(async () => {
+      await server.start();
 
-    try {
-      const clientMetadata = new grpc.Metadata();
-      clientMetadata.add("x-client-trace-id", CLIENT_TRACE_ID);
-      const client = new Ping(
-        `${GrpcTestServer.bindHost}:${server.envoyIngressPort}`,
-        grpc.credentials.createInsecure()
-      );
-      const response = await new Promise((resolve, reject) => {
-        client.wrapper({ message: "ping" }, clientMetadata, (err: ServiceError, response: any) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-          resolve(response);
+      try {
+        const clientMetadata = new grpc.Metadata();
+        clientMetadata.add("x-client-trace-id", CLIENT_TRACE_ID);
+        const client = new Ping(
+          `${GrpcTestServer.bindHost}:${server.envoyIngressPort}`,
+          grpc.credentials.createInsecure()
+        );
+        const response = await new Promise((resolve, reject) => {
+          client.wrapper({ message: "ping" }, clientMetadata, (err: ServiceError, response: any) => {
+            if (err) {
+              reject(err);
+              return;
+            }
+            resolve(response);
+          });
         });
-      });
-    } finally {
-      await server.stop();
-    }
+      } finally {
+        await server.stop();
+      }
+    });
   });
 
   it("should handle retry correctly", async () => {
@@ -171,29 +175,31 @@ describe("GRPC Test", () => {
       }
     })();
 
-    await server.start();
+    server.bind(async () => {
+      await server.start();
 
-    try {
-      const clientMetadata = new grpc.Metadata();
-      clientMetadata.add("x-client-trace-id", CLIENT_TRACE_ID);
-      const client = new Ping(
-        `${GrpcTestServer.bindHost}:${server.envoyIngressPort}`,
-        grpc.credentials.createInsecure()
-      );
-      const response = await new Promise<any>((resolve, reject) => {
-        client.wrapper({ message: "ping" }, clientMetadata, (err: ServiceError, response: any) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-          resolve(response);
+      try {
+        const clientMetadata = new grpc.Metadata();
+        clientMetadata.add("x-client-trace-id", CLIENT_TRACE_ID);
+        const client = new Ping(
+          `${GrpcTestServer.bindHost}:${server.envoyIngressPort}`,
+          grpc.credentials.createInsecure()
+        );
+        const response = await new Promise<any>((resolve, reject) => {
+          client.wrapper({ message: "ping" }, clientMetadata, (err: ServiceError, response: any) => {
+            if (err) {
+              reject(err);
+              return;
+            }
+            resolve(response);
+          });
         });
-      });
-      expect(innerCalledCount).toBe(2);
-      expect(response.message).toBe("pong 2");
-    } finally {
-      await server.stop();
-    }
+        expect(innerCalledCount).toBe(2);
+        expect(response.message).toBe("pong 2");
+      } finally {
+        await server.stop();
+      }
+    });
   });
 
   it("should handle per retry timeout correctly", async () => {
@@ -247,27 +253,29 @@ describe("GRPC Test", () => {
       }
     })();
 
-    await server.start();
+    server.bind(async () => {
+      await server.start();
 
-    try {
-      const clientMetadata = new grpc.Metadata();
-      clientMetadata.add("x-client-trace-id", CLIENT_TRACE_ID);
-      const client = new Ping(
-        `${GrpcTestServer.bindHost}:${server.envoyIngressPort}`,
-        grpc.credentials.createInsecure()
-      );
-      await new Promise<any>((resolve, reject) => {
-        client.wrapper({ message: "ping" }, clientMetadata, (err: ServiceError, response: any) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-          resolve(response);
+      try {
+        const clientMetadata = new grpc.Metadata();
+        clientMetadata.add("x-client-trace-id", CLIENT_TRACE_ID);
+        const client = new Ping(
+          `${GrpcTestServer.bindHost}:${server.envoyIngressPort}`,
+          grpc.credentials.createInsecure()
+        );
+        await new Promise<any>((resolve, reject) => {
+          client.wrapper({ message: "ping" }, clientMetadata, (err: ServiceError, response: any) => {
+            if (err) {
+              reject(err);
+              return;
+            }
+            resolve(response);
+          });
         });
-      });
-    } finally {
-      await server.stop();
-    }
+      } finally {
+        await server.stop();
+      }
+    });
   });
 
   it("should propagate the tracing header directly in direct mode", async () => {
@@ -308,27 +316,29 @@ describe("GRPC Test", () => {
       }
     })();
 
-    await server.start();
+    server.bind(async () => {
+      await server.start();
 
-    try {
-      const clientMetadata = new grpc.Metadata();
-      clientMetadata.add("x-client-trace-id", CLIENT_TRACE_ID);
-      const client = new Ping(
-        `${GrpcTestServer.bindHost}:${server.envoyIngressPort}`,
-        grpc.credentials.createInsecure()
-      );
-      const response = await new Promise((resolve, reject) => {
-        client.wrapper({ message: "ping" }, clientMetadata, (err: ServiceError, response: any) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-          resolve(response);
+      try {
+        const clientMetadata = new grpc.Metadata();
+        clientMetadata.add("x-client-trace-id", CLIENT_TRACE_ID);
+        const client = new Ping(
+          `${GrpcTestServer.bindHost}:${server.envoyIngressPort}`,
+          grpc.credentials.createInsecure()
+        );
+        const response = await new Promise((resolve, reject) => {
+          client.wrapper({ message: "ping" }, clientMetadata, (err: ServiceError, response: any) => {
+            if (err) {
+              reject(err);
+              return;
+            }
+            resolve(response);
+          });
         });
-      });
-    } finally {
-      await server.stop();
-    }
+      } finally {
+        await server.stop();
+      }
+    });
   });
 
   it("should propagate the tracing header directly if the host is not in managed host", async () => {
@@ -368,26 +378,28 @@ describe("GRPC Test", () => {
       }
     })();
 
-    await server.start();
+    server.bind(async () => {
+      await server.start();
 
-    try {
-      const clientMetadata = new grpc.Metadata();
-      clientMetadata.add("x-client-trace-id", CLIENT_TRACE_ID);
-      const client = new Ping(
-        `${GrpcTestServer.bindHost}:${server.envoyIngressPort}`,
-        grpc.credentials.createInsecure()
-      );
-      const response = await new Promise((resolve, reject) => {
-        client.wrapper({ message: "ping" }, clientMetadata, (err: ServiceError, response: any) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-          resolve(response);
+      try {
+        const clientMetadata = new grpc.Metadata();
+        clientMetadata.add("x-client-trace-id", CLIENT_TRACE_ID);
+        const client = new Ping(
+          `${GrpcTestServer.bindHost}:${server.envoyIngressPort}`,
+          grpc.credentials.createInsecure()
+        );
+        const response = await new Promise((resolve, reject) => {
+          client.wrapper({ message: "ping" }, clientMetadata, (err: ServiceError, response: any) => {
+            if (err) {
+              reject(err);
+              return;
+            }
+            resolve(response);
+          });
         });
-      });
-    } finally {
-      await server.stop();
-    }
+      } finally {
+        await server.stop();
+      }
+    });
   });
 });
