@@ -19,7 +19,7 @@ describe("GRPC Test", () => {
         super(0);
       }
 
-      async wrapper(call: ServerUnaryCall<any>): Promise<any> {
+      async wrapper(call: ServerUnaryCall<any, any>): Promise<any> {
         const innerClient = new PingEnvoyClient(
           `${GrpcTestServer.domainName}:${this.envoyIngressPort}`,
           call.metadata
@@ -32,7 +32,7 @@ describe("GRPC Test", () => {
         return innerClient.inner({ message: call.request.message });
       }
 
-      async inner(call: ServerUnaryCall<any>): Promise<any> {
+      async inner(call: ServerUnaryCall<any, any>): Promise<any> {
         const ctx = new EnvoyContext(call.metadata);
         expect(ctx.clientTraceId).toBe(CLIENT_TRACE_ID);
         expect(ctx.requestId).toBe(requestId);
@@ -75,7 +75,7 @@ describe("GRPC Test", () => {
         super(1);
       }
 
-      async wrapper(call: ServerUnaryCall<any>): Promise<any> {
+      async wrapper(call: ServerUnaryCall<any, any>): Promise<any> {
         const innerClient = new PingEnvoyClient(
           `${GrpcTestServer.domainName}:${this.envoyIngressPort}`,
           call.metadata
@@ -101,7 +101,7 @@ describe("GRPC Test", () => {
         return { message: "" };
       }
 
-      async inner(call: ServerUnaryCall<any>): Promise<any> {
+      async inner(call: ServerUnaryCall<any, any>): Promise<any> {
         const ctx = new EnvoyContext(call.metadata);
         innerCalledCount++;
         if (innerCalledCount < 2) {
@@ -143,7 +143,7 @@ describe("GRPC Test", () => {
         super(2);
       }
 
-      async wrapper(call: ServerUnaryCall<any>): Promise<any> {
+      async wrapper(call: ServerUnaryCall<any, any>): Promise<any> {
         const innerClient = new PingEnvoyClient(
           `${GrpcTestServer.domainName}:${this.envoyIngressPort}`,
           call.metadata
@@ -158,7 +158,7 @@ describe("GRPC Test", () => {
         );
       }
 
-      async inner(call: ServerUnaryCall<any>): Promise<any> {
+      async inner(call: ServerUnaryCall<any, any>): Promise<any> {
         const ctx = new EnvoyContext(call.metadata);
         innerCalledCount++;
         if (innerCalledCount < 2) {
@@ -205,7 +205,7 @@ describe("GRPC Test", () => {
         super(3);
       }
 
-      async wrapper(call: ServerUnaryCall<any>): Promise<any> {
+      async wrapper(call: ServerUnaryCall<any, any>): Promise<any> {
         const innerClient = new PingEnvoyClient(
           `${GrpcTestServer.domainName}:${this.envoyIngressPort}`,
           call.metadata
@@ -231,7 +231,7 @@ describe("GRPC Test", () => {
         return { message: "" };
       }
 
-      async inner(call: ServerUnaryCall<any>): Promise<any> {
+      async inner(call: ServerUnaryCall<any, any>): Promise<any> {
         const ctx = new EnvoyContext(call.metadata);
         innerCalledCount++;
         if (innerCalledCount === 2) {
@@ -281,7 +281,7 @@ describe("GRPC Test", () => {
         super(4);
       }
 
-      async wrapper(call: ServerUnaryCall<any>): Promise<any> {
+      async wrapper(call: ServerUnaryCall<any, any>): Promise<any> {
         const init: EnvoyContextInit = {
           meta: call.metadata,
           directMode: true,
@@ -298,7 +298,7 @@ describe("GRPC Test", () => {
         return innerClient.inner({ message: call.request.message });
       }
 
-      async inner(call: ServerUnaryCall<any>): Promise<any> {
+      async inner(call: ServerUnaryCall<any, any>): Promise<any> {
         const ctx = new EnvoyContext(call.metadata);
         expect(ctx.clientTraceId).toBe(CLIENT_TRACE_ID);
         expect(ctx.requestId).toBe(requestId);
@@ -342,7 +342,7 @@ describe("GRPC Test", () => {
         super(5, true);
       }
 
-      async wrapper(call: ServerUnaryCall<any>): Promise<any> {
+      async wrapper(call: ServerUnaryCall<any, any>): Promise<any> {
         const init: EnvoyContextInit = {
           meta: call.metadata,
         };
@@ -358,7 +358,7 @@ describe("GRPC Test", () => {
         return innerClient.inner({ message: call.request.message });
       }
 
-      async inner(call: ServerUnaryCall<any>): Promise<any> {
+      async inner(call: ServerUnaryCall<any, any>): Promise<any> {
         const ctx = new EnvoyContext(call.metadata);
         expect(ctx.clientTraceId).toBe(CLIENT_TRACE_ID);
         expect(ctx.requestId).toBe(requestId);
