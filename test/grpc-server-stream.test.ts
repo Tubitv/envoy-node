@@ -1,6 +1,6 @@
-import * as grpc from "grpc";
+import * as grpc from "@grpc/grpc-js";
 // tslint:disable-next-line:no-duplicate-imports
-import { ServerUnaryCall, sendUnaryData, ServiceError, ServerWriteableStream } from "grpc";
+import { ServerUnaryCall, sendUnaryData, ServiceError, ServerWritableStream } from "@grpc/grpc-js";
 
 import GrpcTestServer, { Ping, PingEnvoyClient } from "./lib/grpc-test-server";
 import { RequestFunc, EnvoyClient } from "../src/types";
@@ -18,7 +18,7 @@ describe("GRPC server stream Test", () => {
         super(50);
       }
 
-      async wrapper(call: ServerUnaryCall<any>): Promise<any> {
+      async wrapper(call: ServerUnaryCall<any, any>): Promise<any> {
         const innerClient = new PingEnvoyClient(
           `${GrpcTestServer.domainName}:${this.envoyIngressPort}`,
           new EnvoyContext(call.metadata)
@@ -28,7 +28,7 @@ describe("GRPC server stream Test", () => {
         requestId = ctx.requestId;
         traceId = ctx.traceId;
         innerParentId = ctx.spanId;
-        await new Promise((resolve, reject) => {
+        await new Promise<void>((resolve, reject) => {
           const stream = innerClient.serverStream({ message: call.request.message });
           stream.on("error", (error) => {
             reject(error);
@@ -47,7 +47,7 @@ describe("GRPC server stream Test", () => {
         return { message: "pong" };
       }
 
-      serverStream(call: ServerWriteableStream<any>): void {
+      serverStream(call: ServerWritableStream<any, any>): void {
         const ctx = new EnvoyContext(call.metadata);
         expect(ctx.clientTraceId).toBe(CLIENT_TRACE_ID);
         expect(ctx.requestId).toBe(requestId);
@@ -59,27 +59,29 @@ describe("GRPC server stream Test", () => {
       }
     })();
 
-    await server.start();
+    server.bind(async () => {
+      await server.start();
 
-    try {
-      const clientMetadata = new grpc.Metadata();
-      clientMetadata.add("x-client-trace-id", CLIENT_TRACE_ID);
-      const client = new Ping(
-        `${GrpcTestServer.bindHost}:${server.envoyIngressPort}`,
-        grpc.credentials.createInsecure()
-      );
-      const response = await new Promise((resolve, reject) => {
-        client.wrapper({ message: "ping" }, clientMetadata, (err: ServiceError, response: any) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-          resolve(response);
+      try {
+        const clientMetadata = new grpc.Metadata();
+        clientMetadata.add("x-client-trace-id", CLIENT_TRACE_ID);
+        const client = new Ping(
+          `${GrpcTestServer.bindHost}:${server.envoyIngressPort}`,
+          grpc.credentials.createInsecure()
+        );
+        const response = await new Promise((resolve, reject) => {
+          client.wrapper({ message: "ping" }, clientMetadata, (err: ServiceError, response: any) => {
+            if (err) {
+              reject(err);
+              return;
+            }
+            resolve(response);
+          });
         });
-      });
-    } finally {
-      await server.stop();
-    }
+      } finally {
+        await server.stop();
+      }
+    });
   });
 
   // NOTE: Timeout is not testable, skip

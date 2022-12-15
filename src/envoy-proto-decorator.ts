@@ -6,8 +6,8 @@ import {
   requestCallback,
   ClientWritableStream,
   ClientReadableStream,
-  ClientDuplexStream
-} from "grpc";
+  ClientDuplexStream,
+} from "@grpc/grpc-js";
 import EnvoyContext from "./envoy-context";
 import EnvoyGrpcRequestParams, { EnvoyGrpcRequestInit } from "./envoy-grpc-request-params";
 import {
@@ -17,7 +17,7 @@ import {
   EnvoyClientConstructor,
   EnvoyClientFuncEnabled,
   HttpHeader,
-  ChannelFactoryOverride
+  ChannelFactoryOverride,
 } from "./types";
 
 /**
@@ -27,7 +27,7 @@ import {
  * @internal
  */
 function makeAsyncFunc(name: string): RequestFunc {
-  return async function(this: EnvoyClient, request: any, options?: EnvoyGrpcRequestInit) {
+  return async function (this: EnvoyClient, request: any, options?: EnvoyGrpcRequestInit) {
     const params = new EnvoyGrpcRequestParams(this.envoyContext, options);
     return new Promise((resolve, reject) => {
       Object.getPrototypeOf(Object.getPrototypeOf(this))[name].call(
@@ -35,7 +35,7 @@ function makeAsyncFunc(name: string): RequestFunc {
         request,
         params.assembleRequestMeta(),
         {
-          host: this.originalAddress
+          host: this.originalAddress,
         },
         (error: ServiceError, response: any) => {
           if (error) {
@@ -54,7 +54,7 @@ function makeAsyncFunc(name: string): RequestFunc {
  * @param name the name of the func
  */
 function wrapClientStreamFunc(name: string) {
-  return function(
+  return function (
     this: EnvoyClient,
     callback: requestCallback<any>,
     options?: EnvoyGrpcRequestInit
@@ -64,7 +64,7 @@ function wrapClientStreamFunc(name: string) {
       this,
       params.assembleRequestMeta(),
       {
-        host: this.originalAddress
+        host: this.originalAddress,
       },
       callback
     );
@@ -76,7 +76,7 @@ function wrapClientStreamFunc(name: string) {
  * @param name the name of the func
  */
 function wrapServerStream(name: string) {
-  return function(
+  return function (
     this: EnvoyClient,
     request: any,
     options?: EnvoyGrpcRequestInit
@@ -87,7 +87,7 @@ function wrapServerStream(name: string) {
       request,
       params.assembleRequestMeta(),
       {
-        host: this.originalAddress
+        host: this.originalAddress,
       }
     );
   };
@@ -98,13 +98,16 @@ function wrapServerStream(name: string) {
  * @param name the func name
  */
 function wrapBidiStream(name: string) {
-  return function(this: EnvoyClient, options?: EnvoyGrpcRequestInit): ClientDuplexStream<any, any> {
+  return function (
+    this: EnvoyClient,
+    options?: EnvoyGrpcRequestInit
+  ): ClientDuplexStream<any, any> {
     const params = new EnvoyGrpcRequestParams(this.envoyContext, options);
     return Object.getPrototypeOf(Object.getPrototypeOf(this))[name].call(
       this,
       params.assembleRequestMeta(),
       {
-        host: this.originalAddress
+        host: this.originalAddress,
       }
     );
   };

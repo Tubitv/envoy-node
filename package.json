@@ -1,6 +1,6 @@
 {
   "name": "envoy-node",
-  "version": "1.13.0-development",
+  "version": "2.0.0",
   "description": "",
   "keywords": [],
   "main": "dist/envoy-node.umd.js",
@@ -111,7 +111,7 @@
   },
   "dependencies": {
     "async_hooks": "^1.0.0",
-    "grpc": "^1.24.2",
+    "@grpc/grpc-js": "^1.8.0",
     "node-fetch": "^2.6.0",
     "request": "^2.88.2"
   },

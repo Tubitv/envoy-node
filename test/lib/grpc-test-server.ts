@@ -1,13 +1,13 @@
-import * as grpc from "grpc";
+import * as grpc from "@grpc/grpc-js";
 // tslint:disable-next-line:no-duplicate-imports
 import {
   ServerUnaryCall,
   sendUnaryData,
   ServiceError,
   ServerReadableStream,
-  ServerWriteableStream,
+  ServerWritableStream,
   ServerDuplexStream,
-} from "grpc";
+} from "@grpc/grpc-js";
 import * as protoLoader from "@grpc/proto-loader";
 import CommonTestServer from "./common-test-server";
 import envoyProtoDecorator from "../../src/envoy-proto-decorator";
@@ -35,8 +35,8 @@ export const { Ping } = testProto;
 // tslint:disable-next-line:variable-name
 export const PingEnvoyClient = envoyProtoDecorator<PingEnvoyClient>(Ping);
 
-function wrapImpl(func: (call: ServerUnaryCall<any>) => Promise<any>) {
-  return (call: ServerUnaryCall<any>, callback: sendUnaryData<any>) => {
+function wrapImpl(func: (call: ServerUnaryCall<any, any>) => Promise<any>) {
+  return (call: ServerUnaryCall<any, any>, callback: sendUnaryData<any>) => {
     func(call)
       .then((result) => {
         // tslint:disable-next-line:no-null-keyword
@@ -51,7 +51,7 @@ function wrapImpl(func: (call: ServerUnaryCall<any>) => Promise<any>) {
 export default abstract class GrpcTestServer extends CommonTestServer {
   readonly server: grpc.Server;
 
-  constructor(serverId: number, useManagedHostHeader = false) {
+  constructor (serverId: number, useManagedHostHeader = false) {
     super("./envoy-grpc-config.yaml", serverId, useManagedHostHeader);
     this.server = new grpc.Server();
     this.server.addService(Ping.service, {
@@ -61,23 +61,19 @@ export default abstract class GrpcTestServer extends CommonTestServer {
       serverStream: this.serverStream.bind(this),
       bidiStream: this.bidiStream.bind(this),
     });
-    this.server.bind(
-      `${GrpcTestServer.bindHost}:${this.servicePort}`,
-      grpc.ServerCredentials.createInsecure()
-    );
   }
 
-  async wrapper(call: ServerUnaryCall<any>): Promise<any> {
+  async wrapper(call: ServerUnaryCall<any, any>): Promise<any> {
     console.log("client requested:", call.request);
     return { message: "pong" };
   }
 
-  async inner(call: ServerUnaryCall<any>): Promise<any> {
+  async inner(call: ServerUnaryCall<any, any>): Promise<any> {
     console.log("client requested:", call.request);
     return { message: "pong" };
   }
 
-  clientStream(call: ServerReadableStream<any>, callback: sendUnaryData<any>): void {
+  clientStream(call: ServerReadableStream<any, any>, callback: sendUnaryData<any>): void {
     call.on("data", (data) => {
       console.log("got data from client:", data);
     });
@@ -90,7 +86,7 @@ export default abstract class GrpcTestServer extends CommonTestServer {
     });
   }
 
-  serverStream(call: ServerWriteableStream<any>): void {
+  serverStream(call: ServerWritableStream<any, any>): void {
     console.log("client requested:", call.request);
     call.write({ message: "server send a message" });
     call.on("end", () => {
@@ -107,6 +103,19 @@ export default abstract class GrpcTestServer extends CommonTestServer {
     call.on("end", () => {
       call.end();
     });
+  }
+
+  async bind(callback: () => void) {
+    this.server.bindAsync(
+      `${GrpcTestServer.bindHost}:${this.servicePort}`,
+      grpc.ServerCredentials.createInsecure(),
+      async (error, port) => {
+        if (error) {
+          return console.log(error);
+        }
+        callback();
+      }
+    );
   }
 
   async start() {
